@@ -55,10 +55,15 @@ public class MainFrame extends JFrame {
         left.setBorder(BorderFactory.createTitledBorder("Furniture"));
         left.add(new JLabel("Furniture list"));
 
-        // Center panel (Canvas placeholder)
-        JPanel center = new JPanel();
+        // Center panel (Canvas)
+        JPanel center = new JPanel(new BorderLayout());
         center.setBorder(BorderFactory.createTitledBorder("Design Canvas"));
-        center.add(new JLabel("2D / 3D Canvas Area"));
+
+        lk.group40.frdv.ui.canvas.DesignCanvas2D canvas2D =
+                new lk.group40.frdv.ui.canvas.DesignCanvas2D();
+
+        center.add(canvas2D, BorderLayout.CENTER);
+
 
         // Right panel (Properties)
         JPanel right = new JPanel();
