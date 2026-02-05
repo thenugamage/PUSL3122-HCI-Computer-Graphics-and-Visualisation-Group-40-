@@ -44,7 +44,8 @@ public class LoginFrame extends JFrame {
         gc.fill = GridBagConstraints.HORIZONTAL;
         gc.weightx = 1;
 
-        gc.gridx = 0; gc.gridy = 0;
+        gc.gridx = 0;
+        gc.gridy = 0;
         form.add(new JLabel("Email"), gc);
 
         gc.gridy = 1;
@@ -59,10 +60,11 @@ public class LoginFrame extends JFrame {
         JLabel forgot = new JLabel("<html><a href='#'>Forgot Password?</a></html>");
         forgot.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         forgot.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override public void mouseClicked(java.awt.event.MouseEvent e) {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
                 JOptionPane.showMessageDialog(LoginFrame.this,
-                        "Password reset is simulated in the prototype.\n" +
-                        "In implementation, this can be handled by admin support.",
+                        "Password reset is simulated in this version.\n" +
+                        "In a full system, this would be handled by admin support.",
                         "Forgot Password",
                         JOptionPane.INFORMATION_MESSAGE);
             }
@@ -95,13 +97,10 @@ public class LoginFrame extends JFrame {
             return;
         }
 
-        // MVP: Simulated login success (matches HCI prototype stage)
-        JOptionPane.showMessageDialog(this,
-                "Login successful (simulated)\nUser: " + email,
-                "Welcome",
-                JOptionPane.INFORMATION_MESSAGE);
+        // Simulated successful login (HCI prototype stage)
+        dispose(); // close login window
 
-        // Next step: open MainFrame and show logged-in user
-        // (we’ll implement MainFrame next)
+        MainFrame mainFrame = new MainFrame(email);
+        mainFrame.setVisible(true);
     }
 }
