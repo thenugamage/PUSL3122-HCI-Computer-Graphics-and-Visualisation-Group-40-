@@ -47,34 +47,47 @@ public class MainFrame extends JFrame {
     }
 
     private JComponent buildMainArea() {
-        JPanel main = new JPanel(new BorderLayout());
+    JPanel main = new JPanel(new BorderLayout());
 
-        // Left panel (Furniture)
-        JPanel left = new JPanel();
-        left.setPreferredSize(new Dimension(200, 0));
-        left.setBorder(BorderFactory.createTitledBorder("Furniture"));
-        left.add(new JLabel("Furniture list"));
+    // Canvas (create once so panels can interact with it)
+    lk.group40.frdv.ui.canvas.DesignCanvas2D canvas2D =
+            new lk.group40.frdv.ui.canvas.DesignCanvas2D();
 
-        // Center panel (Canvas)
-        JPanel center = new JPanel(new BorderLayout());
-        center.setBorder(BorderFactory.createTitledBorder("Design Canvas"));
+    // Left panel container
+    JPanel leftContainer = new JPanel();
+    leftContainer.setPreferredSize(new Dimension(240, 0));
+    leftContainer.setLayout(new BoxLayout(leftContainer, BoxLayout.Y_AXIS));
 
-        lk.group40.frdv.ui.canvas.DesignCanvas2D canvas2D =
-                new lk.group40.frdv.ui.canvas.DesignCanvas2D();
+    // Room config panel (top)
+    lk.group40.frdv.ui.panels.RoomConfigPanel roomConfig =
+            new lk.group40.frdv.ui.panels.RoomConfigPanel(canvas2D);
 
-        center.add(canvas2D, BorderLayout.CENTER);
+    // Furniture panel placeholder (bottom for now)
+    JPanel furniturePanel = new JPanel();
+    furniturePanel.setBorder(BorderFactory.createTitledBorder("Furniture"));
+    furniturePanel.setPreferredSize(new Dimension(240, 200));
+    furniturePanel.add(new JLabel("Furniture list (next)"));
 
+    leftContainer.add(roomConfig);
+    leftContainer.add(Box.createVerticalStrut(10));
+    leftContainer.add(furniturePanel);
 
-        // Right panel (Properties)
-        JPanel right = new JPanel();
-        right.setPreferredSize(new Dimension(250, 0));
-        right.setBorder(BorderFactory.createTitledBorder("Properties"));
-        right.add(new JLabel("Selected item properties"));
+    // Center panel (Canvas)
+    JPanel center = new JPanel(new BorderLayout());
+    center.setBorder(BorderFactory.createTitledBorder("Design Canvas"));
+    center.add(canvas2D, BorderLayout.CENTER);
 
-        main.add(left, BorderLayout.WEST);
-        main.add(center, BorderLayout.CENTER);
-        main.add(right, BorderLayout.EAST);
+    // Right panel (Properties placeholder)
+    JPanel right = new JPanel();
+    right.setPreferredSize(new Dimension(280, 0));
+    right.setBorder(BorderFactory.createTitledBorder("Properties"));
+    right.add(new JLabel("Selected item properties"));
 
-        return main;
-    }
+    main.add(leftContainer, BorderLayout.WEST);
+    main.add(center, BorderLayout.CENTER);
+    main.add(right, BorderLayout.EAST);
+
+    return main;
+}
+
 }
