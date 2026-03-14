@@ -6,10 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DatabaseConfig {
-    private static final String DB_DIR = System.getenv("APP_DATA_DIR") != null
-            ? System.getenv("APP_DATA_DIR")
-            : ".";
-    private static final String DEFAULT_URL = "jdbc:sqlite:" + DB_DIR + "/furniture_visualizer.db";
+    private static final String DEFAULT_URL = "jdbc:sqlite:furniture_visualizer.db";
     private static String currentUrl = DEFAULT_URL;
 
     public static void setTestUrl() {
