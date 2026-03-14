@@ -3,7 +3,7 @@ package com.capitalcarrier.roomvisualizer.presentation.auth;
 import com.capitalcarrier.roomvisualizer.application.auth.AuthService;
 import com.capitalcarrier.roomvisualizer.domain.model.User;
 import com.capitalcarrier.roomvisualizer.presentation.components.*;
-import com.capitalcarrier.roomvisualizer.presentation.dashboard.DashboardFrame;
+import com.capitalcarrier.roomvisualizer.presentation.templates.TemplatesFrame;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -190,7 +190,7 @@ public class LoginFrame extends JFrame {
     private void openDashboard() {
         SwingUtilities.invokeLater(() -> {
             try {
-                new DashboardFrame().setVisible(true);
+                new TemplatesFrame().setVisible(true);
                 dispose();
             } catch (Exception e) {
                 e.printStackTrace();
