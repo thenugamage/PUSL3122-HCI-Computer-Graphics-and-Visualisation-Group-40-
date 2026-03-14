@@ -1,0 +1,34 @@
+# Maven build output (builder stage handles this)
+target/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+out/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+
+# Secrets — NEVER bake credentials into the Docker image
+google_oauth.properties
+.env
+*.env
+
+# Database (use a volume instead)
+*.db
+*.sqlite
+data/
+
+# Docs/coursework
+*.docx
+*.pdf
+README.md
+
+# Docker files themselves (not needed in build context)
+docker-compose.yml
+Dockerfile
