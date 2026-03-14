@@ -42,4 +42,6 @@ RUN mkdir -p /app/data
 
 ENV DISPLAY=:0
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Add /app to classpath so the mounted google_oauth.properties is found by AuthService
+ENTRYPOINT ["java", "-cp", "/app:/app/app.jar", "com.capitalcarrier.roomvisualizer.App"]
+
