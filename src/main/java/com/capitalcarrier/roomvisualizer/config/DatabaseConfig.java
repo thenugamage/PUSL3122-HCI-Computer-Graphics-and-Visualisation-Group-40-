@@ -41,9 +41,13 @@ public class DatabaseConfig {
              Statement stmt = conn.createStatement()) {
             stmt.execute(createUsersTable);
             stmt.execute(createProjectsTable);
-            System.out.println("Database initialized successfully.");
+            
+            // Get absolute path for logging
+            String dbPath = new java.io.File(currentUrl.replace("jdbc:sqlite:", "")).getAbsolutePath();
+            System.out.println("Database initialized successfully at: " + dbPath);
         } catch (SQLException e) {
-            System.err.println("Error initializing database: " + e.getMessage());
+            System.err.println("CRITICAL: Error initializing database: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
