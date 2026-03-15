@@ -2,6 +2,8 @@ package com.capitalcarrier.roomvisualizer.presentation.templates;
 
 import com.capitalcarrier.roomvisualizer.application.auth.AuthService;
 import com.capitalcarrier.roomvisualizer.domain.model.User;
+import com.capitalcarrier.roomvisualizer.domain.model.Room;
+import com.capitalcarrier.roomvisualizer.presentation.editor.EditorFrame;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -66,50 +68,44 @@ public class TemplatesFrame extends JFrame {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setColor(NAV_BG);
                 g2.fillRect(0, 0, getWidth(), getHeight());
-                g2.setColor(new Color(255, 255, 255, 18));
+                g2.setColor(new Color(255, 255, 255, 10));
                 g2.drawLine(0, getHeight() - 1, getWidth(), getHeight() - 1);
                 g2.dispose();
             }
         };
-        nav.setOpaque(false);
-        nav.setPreferredSize(new Dimension(0, 56));
+        nav.setPreferredSize(new Dimension(0, 64));
         nav.setBorder(new EmptyBorder(0, 24, 0, 24));
 
-        // Left: logo + nav items
-        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
         left.setOpaque(false);
-        left.add(buildLogo());
-        left.add(Box.createHorizontalStrut(16));
-        String[] labels = {"My Designs", "New Design", "Templates", "Settings"};
-        for (String lbl : labels) left.add(buildNavItem(lbl, lbl.equals("Templates")));
+        JLabel logo = new JLabel("Lanka Furniture");
+        logo.setFont(new Font("Inter", Font.BOLD, 18));
+        logo.setForeground(Color.WHITE);
+        left.add(logo);
 
-        // Right: user chip
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        String[] menu = {"My Designs", "New Design", "My Rooms", "Settings"};
+        for (String m : menu) {
+            JLabel lbl = new JLabel(m);
+            lbl.setFont(new Font("Inter", Font.PLAIN, 14));
+            lbl.setForeground(m.equals("New Design") ? PURPLE : TXT_SEC);
+            lbl.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            lbl.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    if (m.equals("My Designs")) {
+                        new com.capitalcarrier.roomvisualizer.presentation.dashboard.DashboardFrame().setVisible(true);
+                        dispose();
+                    }
+                }
+            });
+            left.add(lbl);
+        }
+
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
         right.setOpaque(false);
         User user = AuthService.getCurrentUser();
-        String name = (user != null && user.getFullName() != null) ? user.getFullName() : "User";
-        String init = name.substring(0, 1).toUpperCase();
-
-        JLabel userName = new JLabel(name);
-        userName.setFont(new Font("Inter", Font.PLAIN, 13));
-        userName.setForeground(TXT_SEC);
-
-        JLabel avatar = new JLabel(init) {
-            @Override protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(PURPLE);
-                g2.fillOval(0, (getHeight() - 28) / 2, 28, 28);
-                g2.setColor(Color.WHITE);
-                g2.setFont(new Font("Inter", Font.BOLD, 12));
-                FontMetrics fm = g2.getFontMetrics();
-                g2.drawString(getText(), (28 - fm.stringWidth(getText())) / 2, (getHeight() - 28) / 2 + 19);
-                g2.dispose();
-            }
-            @Override public Dimension getPreferredSize() { return new Dimension(28, 56); }
-        };
-        right.add(userName);
-        right.add(avatar);
+        JLabel userLabel = new JLabel(user != null ? user.getFullName() : "User");
+        userLabel.setForeground(TXT_SEC);
+        right.add(userLabel);
 
         nav.add(left, BorderLayout.WEST);
         nav.add(right, BorderLayout.EAST);
@@ -302,9 +298,17 @@ public class TemplatesFrame extends JFrame {
         btns.setOpaque(false);
 
         JButton useBtn = buildPurpleButton("Use This Room  →");
-        useBtn.addActionListener(e ->
-            JOptionPane.showMessageDialog(this,
-                "Opening \"" + name + "\" template.\nEditor coming soon!", "Use Template", JOptionPane.INFORMATION_MESSAGE));
+        useBtn.addActionListener(e -> {
+            Room room = new Room();
+            room.setWidth(w);
+            room.setLength(l);
+            room.setHeight(h);
+            room.setWallColor("#E0D2C8"); // Default wall color
+            room.setFloorColor("#A08764"); // Default floor color
+            
+            new EditorFrame(room).setVisible(true);
+            dispose();
+        });
 
         JButton editBtn = new JButton("Edit") {
             boolean hov = false;

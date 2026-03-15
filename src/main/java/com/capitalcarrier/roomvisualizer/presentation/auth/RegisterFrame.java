@@ -3,7 +3,7 @@ package com.capitalcarrier.roomvisualizer.presentation.auth;
 import com.capitalcarrier.roomvisualizer.application.auth.AuthService;
 import com.capitalcarrier.roomvisualizer.domain.model.User;
 import com.capitalcarrier.roomvisualizer.presentation.components.*;
-import com.capitalcarrier.roomvisualizer.presentation.templates.TemplatesFrame;
+import com.capitalcarrier.roomvisualizer.presentation.dashboard.DashboardFrame;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -201,7 +201,7 @@ public class RegisterFrame extends JFrame {
     private void openDashboard() {
         SwingUtilities.invokeLater(() -> {
             try {
-                new TemplatesFrame().setVisible(true);
+                new DashboardFrame().setVisible(true);
                 dispose();
             } catch (Exception e) {
                 e.printStackTrace();

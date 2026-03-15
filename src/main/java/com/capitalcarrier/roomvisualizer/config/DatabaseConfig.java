@@ -27,9 +27,20 @@ public class DatabaseConfig {
                 "google_id TEXT UNIQUE" +
                 ");";
 
+        String createProjectsTable = "CREATE TABLE IF NOT EXISTS design_projects (" +
+                "id TEXT PRIMARY KEY," +
+                "user_id TEXT," +
+                "name TEXT," +
+                "room_data TEXT," +
+                "created_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                "updated_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                "FOREIGN KEY(user_id) REFERENCES users(id)" +
+                ");";
+
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
             stmt.execute(createUsersTable);
+            stmt.execute(createProjectsTable);
             System.out.println("Database initialized successfully.");
         } catch (SQLException e) {
             System.err.println("Error initializing database: " + e.getMessage());
