@@ -140,12 +140,7 @@ public class AuthService {
         String clientId = oauthConfig.getProperty("GOOGLE_CLIENT_ID", "");
         String clientSecret = oauthConfig.getProperty("GOOGLE_CLIENT_SECRET", "");
         if (clientId.isEmpty() || clientSecret.isEmpty()) {
-            throw new Exception("Google OAuth credentials not found.\n\n" +
-                "Action Required:\n" +
-                "1. Locate 'google_oauth.properties.example' in the project root.\n" +
-                "2. Create a copy named 'google_oauth.properties' in 'src/main/resources/'.\n" +
-                "3. Fill in the Client ID and Secret.\n\n" +
-                "Note: This file is not shared via Git for security.");
+            throw new Exception("Google OAuth credentials are missing in 'src/main/resources/google_oauth.properties'.");
         }
 
         String clientSecretsJson = String.format("{\"installed\":{\"client_id\":\"%s\",\"client_secret\":\"%s\"}}", clientId, clientSecret);

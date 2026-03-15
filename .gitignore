@@ -60,7 +60,7 @@ bin/
 # Secrets & Credentials  ← KEY SECTION
 # ===============================
 # Google OAuth credentials - NEVER commit these
-google_oauth.properties
+# google_oauth.properties (will be shared for team collaboration)
 client_secret*.json
 credentials.json
 token.json
