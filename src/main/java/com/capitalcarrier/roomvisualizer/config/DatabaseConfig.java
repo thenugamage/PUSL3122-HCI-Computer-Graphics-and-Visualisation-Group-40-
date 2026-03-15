@@ -43,15 +43,30 @@ public class DatabaseConfig {
         if (url.startsWith("jdbc:sqlite:")) {
             return DriverManager.getConnection(url);
         } else {
-            // For PostgreSQL, try to extract user/password from props if not in URL properly
-            java.util.Properties props = loadProperties();
+            // For Remote PostgreSQL (Supabase Pooler - Required for IPv4 Networks)
+            // Note: Direct host is IPv6-only and will return 'No route to host' on IPv4.
+            String host = "aws-1-ap-northeast-1.pooler.supabase.com";
             String user = "postgres.miqglabqmtnqseyetwec";
-            String pass = "KE2/sKVjF/gH$3";
-            return DriverManager.getConnection(url, user, pass);
+            String pass = "sBidOAfdYJdSUaDu";
+            
+            java.util.Properties dbProps = new java.util.Properties();
+            dbProps.setProperty("user", user);
+            dbProps.setProperty("password", pass);
+            dbProps.setProperty("ssl", "true");
+            dbProps.setProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory");
+            dbProps.setProperty("prepareThreshold", "0");
+            
+            // Port 6543 is the Transaction Pooler (reliable on IPv4)
+            String cleanUrl = "jdbc:postgresql://" + host + ":6543/postgres";
+            System.out.println("Connecting to Supabase Pooler (IPv4): " + host + ":6543 as " + user);
+            
+            return DriverManager.getConnection(cleanUrl, dbProps);
         }
     }
 
     public static void initializeDatabase() {
+        String timestampType = getUrl().startsWith("jdbc:sqlite:") ? "DATETIME" : "TIMESTAMP";
+        
         String createUsersTable = "CREATE TABLE IF NOT EXISTS users (" +
                 "id TEXT PRIMARY KEY," +
                 "username TEXT UNIQUE," +
@@ -66,8 +81,8 @@ public class DatabaseConfig {
                 "user_id TEXT," +
                 "name TEXT," +
                 "room_data TEXT," +
-                "created_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
-                "updated_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                "created_at " + timestampType + " DEFAULT CURRENT_TIMESTAMP," +
+                "updated_at " + timestampType + " DEFAULT CURRENT_TIMESTAMP," +
                 "FOREIGN KEY(user_id) REFERENCES users(id)" +
                 ");";
 
