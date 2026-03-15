@@ -80,7 +80,6 @@ public class AuthService {
             user.setEmail(email);
             user.setFullName(fullName);
             user.setPasswordHash(hash);
-            currentUser = user;
             return user;
         }
     }

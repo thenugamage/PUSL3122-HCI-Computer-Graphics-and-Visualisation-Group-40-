@@ -1,7 +1,6 @@
 package com.capitalcarrier.roomvisualizer.presentation.auth;
 
 import com.capitalcarrier.roomvisualizer.application.auth.AuthService;
-import com.capitalcarrier.roomvisualizer.domain.model.User;
 import com.capitalcarrier.roomvisualizer.presentation.components.*;
 import com.capitalcarrier.roomvisualizer.presentation.dashboard.DashboardFrame;
 
@@ -10,7 +9,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.GeneralPath;
 
 public class RegisterFrame extends JFrame {
 
@@ -64,13 +62,14 @@ public class RegisterFrame extends JFrame {
         signUpButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         signUpButton.addActionListener(e -> {
             try {
-                User user = AuthService.registerLocalUser(
+                 AuthService.registerLocalUser(
                     nameField.getText(), 
                     userField.getText(), 
                     emailField.getText(), 
                     new String(passwordField.getPassword())
                 );
-                openDashboard();
+                JOptionPane.showMessageDialog(this, "Account created successfully! Please sign in with your credentials.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                openLogin();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Registration Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -82,7 +81,7 @@ public class RegisterFrame extends JFrame {
         JButton googleButton = createGoogleButton();
         googleButton.addActionListener(e -> {
             try {
-                User user = AuthService.loginWithGoogle();
+                AuthService.loginWithGoogle();
                 openDashboard();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Could not sign in with Google: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -202,6 +201,17 @@ public class RegisterFrame extends JFrame {
         SwingUtilities.invokeLater(() -> {
             try {
                 new DashboardFrame().setVisible(true);
+                dispose();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void openLogin() {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                new LoginFrame().setVisible(true);
                 dispose();
             } catch (Exception e) {
                 e.printStackTrace();
