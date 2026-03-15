@@ -55,14 +55,14 @@ public class LoginFrame extends JFrame {
         subHeaderLabel.setForeground(new Color(130, 135, 145));
         subHeaderLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        FormInput emailField = new FormInput("Enter your email", FormInput.IconType.ENVELOPE);
+        FormInput usernameField = new FormInput("Enter your username", FormInput.IconType.USER);
         FormPasswordInput passwordField = new FormPasswordInput("Password");
 
         PrimaryButton signInButton = new PrimaryButton("Sign in Account");
         signInButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         signInButton.addActionListener(e -> {
             try {
-                User user = AuthService.loginLocalUser(emailField.getText(), new String(passwordField.getPassword()));
+                User user = AuthService.loginLocalUser(usernameField.getText(), new String(passwordField.getPassword()));
                 openDashboard();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Login Error", JOptionPane.ERROR_MESSAGE);
@@ -107,7 +107,7 @@ public class LoginFrame extends JFrame {
         card.add(Box.createVerticalStrut(8));
         card.add(subHeaderLabel);
         card.add(Box.createVerticalStrut(35));
-        card.add(createFieldWrapper("Email Address", emailField));
+        card.add(createFieldWrapper("Username", usernameField));
         card.add(Box.createVerticalStrut(15));
         card.add(createFieldWrapper("Password", passwordField));
         card.add(Box.createVerticalStrut(25));

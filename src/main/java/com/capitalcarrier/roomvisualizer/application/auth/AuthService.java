@@ -57,6 +57,25 @@ public class AuthService {
     }
 
     public static User registerLocalUser(String fullName, String username, String email, String password) throws Exception {
+        if (username == null || username.trim().isEmpty()) {
+            throw new Exception("Username is required");
+        }
+        if (username.length() < 3) {
+            throw new Exception("Username must be at least 3 characters");
+        }
+        if (email == null || email.trim().isEmpty()) {
+            throw new Exception("Email is required");
+        }
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new Exception("Invalid email format");
+        }
+        if (password == null || password.isEmpty()) {
+            throw new Exception("Password is required");
+        }
+        if (password.length() < 6) {
+            throw new Exception("Password must be at least 6 characters");
+        }
+        
         if (getUserByUsername(username).isPresent()) {
             throw new Exception("Username already exists");
         }
@@ -85,6 +104,13 @@ public class AuthService {
     }
 
     public static User loginLocalUser(String username, String password) throws Exception {
+        if (username == null || username.trim().isEmpty()) {
+            throw new Exception("Username is required");
+        }
+        if (password == null || password.isEmpty()) {
+            throw new Exception("Password is required");
+        }
+        
         Optional<User> optUser = getUserByUsername(username);
         if (optUser.isPresent()) {
             User user = optUser.get();

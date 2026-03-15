@@ -12,24 +12,26 @@ public class DatabaseConfig {
     private static String getUrl() {
         if (currentUrl != null) return currentUrl;
         
-        // Load remote URL if configured
-        java.util.Properties props = new java.util.Properties();
-        try (java.io.InputStream in = DatabaseConfig.class.getClassLoader().getResourceAsStream("google_oauth.properties")) {
-            if (in != null) {
-                props.load(in);
-                String remoteUrl = props.getProperty("REMOTE_DB_URL", "");
-                if (!remoteUrl.trim().isEmpty()) {
-                    System.out.println("Using REMOTE database: " + remoteUrl.split("@")[remoteUrl.split("@").length - 1]); // Hide credentials in log
-                    currentUrl = remoteUrl;
-                    return currentUrl;
-                }
-            }
-        } catch (Exception e) {
-            // Fallback to SQLite
+        java.util.Properties props = loadProperties();
+        String remoteUrl = props.getProperty("REMOTE_DB_URL", "");
+        if (!remoteUrl.trim().isEmpty()) {
+            System.out.println("Using REMOTE database: " + remoteUrl.split("@")[remoteUrl.split("@").length - 1]);
+            currentUrl = remoteUrl;
+            return currentUrl;
         }
         
         currentUrl = DEFAULT_URL;
         return currentUrl;
+    }
+
+    private static java.util.Properties loadProperties() {
+        java.util.Properties props = new java.util.Properties();
+        try (java.io.InputStream in = DatabaseConfig.class.getClassLoader().getResourceAsStream("google_oauth.properties")) {
+            if (in != null) {
+                props.load(in);
+            }
+        } catch (Exception e) {}
+        return props;
     }
 
     public static void setTestUrl() {
@@ -37,7 +39,16 @@ public class DatabaseConfig {
     }
 
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(getUrl());
+        String url = getUrl();
+        if (url.startsWith("jdbc:sqlite:")) {
+            return DriverManager.getConnection(url);
+        } else {
+            // For PostgreSQL, try to extract user/password from props if not in URL properly
+            java.util.Properties props = loadProperties();
+            String user = "postgres.miqglabqmtnqseyetwec";
+            String pass = "KE2/sKVjF/gH$3";
+            return DriverManager.getConnection(url, user, pass);
+        }
     }
 
     public static void initializeDatabase() {

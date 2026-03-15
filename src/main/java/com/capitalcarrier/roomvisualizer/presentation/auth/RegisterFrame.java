@@ -53,7 +53,6 @@ public class RegisterFrame extends JFrame {
         subHeaderLabel.setForeground(new Color(130, 135, 145));
         subHeaderLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        FormInput nameField = new FormInput("Enter your full name", FormInput.IconType.USER);
         FormInput emailField = new FormInput("Enter your email", FormInput.IconType.ENVELOPE);
         FormInput userField = new FormInput("Choose a username", FormInput.IconType.USER);
         FormPasswordInput passwordField = new FormPasswordInput("Create a password");
@@ -63,7 +62,7 @@ public class RegisterFrame extends JFrame {
         signUpButton.addActionListener(e -> {
             try {
                  AuthService.registerLocalUser(
-                    nameField.getText(), 
+                    userField.getText(), // Use username as full name for now
                     userField.getText(), 
                     emailField.getText(), 
                     new String(passwordField.getPassword())
@@ -113,8 +112,6 @@ public class RegisterFrame extends JFrame {
         card.add(Box.createVerticalStrut(6));
         card.add(subHeaderLabel);
         card.add(Box.createVerticalStrut(25));
-        card.add(createFieldWrapper("Full Name", nameField));
-        card.add(Box.createVerticalStrut(10));
         card.add(createFieldWrapper("Username", userField));
         card.add(Box.createVerticalStrut(10));
         card.add(createFieldWrapper("Email Address", emailField));
