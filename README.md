@@ -6,6 +6,7 @@ PUSL3122 group coursework: Java Swing desktop application for room and furniture
 
 The application now uses a **Remote PostgreSQL Database (Supabase)**. This ensures that the entire team shares the same accounts, projects, and furniture data in real-time, eliminating the need for Git-based database synchronisation.
 
+- **IPv4 Compatibility**: We use the Supabase Transaction Pooler (**Port 6543**) to ensure the app works on all networks, including those without IPv6 support.
 - **Real-time Sync**: Changes made by one team member are immediately visible to others.
 - **Persistent Storage**: All designs and user accounts are stored safely in the cloud.
 
@@ -24,7 +25,7 @@ We have refined the authentication system for a better user experience:
 1.  **Database Connection Failed**:
     - Ensure your `REMOTE_DB_URL` in `src/main/resources/google_oauth.properties` is correct.
     - If you see a "password authentication failed" error, check with the team lead for the latest **Database Password** from the Supabase dashboard.
-    - Ensure you are on a network that permits outgoing connections to port `5432`.
+    - **Port 6543**: Ensure you are using port `6543` in the connection string if you are on an IPv4-only network (highly recommended).
 2.  **Google Sign-in Issues**:
     - Ensure `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are correctly set.
     - New team members must be added as **"Test users"** in the Google Cloud Console's OAuth consent screen by the project owner.
