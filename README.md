@@ -4,10 +4,9 @@ PUSL3122 group coursework: Java Swing desktop application for room and furniture
 
 ## Database & Accounts
 
-- **Local Storage**: The application uses a local SQLite database (`furniture_visualizer.db`). This file is **not shared** via Git. Accounts created on one computer will not be available on another by default.
-- **Cross-Device Access**: To use the same account on different computers:
-    1. **Google Sign-in**: Recommend using Google Sign-in. The app will automatically create a local profile for you on any machine when you sign in with the same Google account.
-    2. **Manual Sync**: You can manually copy the `furniture_visualizer.db` file between project root directories.
+- **Shared Storage**: The application's database (`furniture_visualizer.db`) is now **tracked by Git**. This allows the team to share a common set of accounts and projects.
+- **Merge Conflicts**: Since the file is shared, please **coordinate with the team** when creating new accounts to avoid database merge conflicts. If a conflict occurs, you may need to choose one version of the database.
+- **Google Sign-in**: Still recommended for a seamless cross-device experience.
 
 ## Quick Start
 

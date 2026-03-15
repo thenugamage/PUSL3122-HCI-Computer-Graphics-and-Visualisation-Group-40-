@@ -82,9 +82,9 @@ secret.properties
 # ===============================
 # Database files (runtime data)
 # ===============================
-*.db
-*.sqlite
-*.sqlite3
+# *.db
+# *.sqlite
+# *.sqlite3
 
 # ===============================
 # Runtime / export data
