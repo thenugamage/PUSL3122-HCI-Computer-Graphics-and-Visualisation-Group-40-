@@ -2,22 +2,37 @@
 
 PUSL3122 group coursework: Java Swing desktop application for room and furniture design with 2D/3D visualisation, developed using Agile Scrum practices.
 
-## Database & Accounts
+## Remote Database & Team Collaboration
 
-- **Shared Storage**: The application's database (`furniture_visualizer.db`) is now **tracked by Git**. This allows the team to share a common set of accounts and projects.
-- **Merge Conflicts**: Since the file is shared, please **coordinate with the team** when creating new accounts to avoid database merge conflicts. If a conflict occurs, you may need to choose one version of the database.
-- **Google Sign-in**: Still recommended for a seamless cross-device experience.
+The application now uses a **Remote PostgreSQL Database (Supabase)**. This ensures that the entire team shares the same accounts, projects, and furniture data in real-time, eliminating the need for Git-based database synchronisation.
 
-## Troubleshooting Google Sign-in
+- **Real-time Sync**: Changes made by one team member are immediately visible to others.
+- **Persistent Storage**: All designs and user accounts are stored safely in the cloud.
 
-If Google Sign-in is not working for team members:
+## Authentication System
 
-1.  **Check Credentials**: Ensure `src/main/resources/google_oauth.properties` exists on their machine (copy from `.example`).
-2.  **Test Users**: If the Google Cloud Project is in "Testing" mode, the owner must add each team member's Google email to the **"Test users"** list in the Google Cloud Console (OAuth consent screen).
-3.  **Port 8888**: Ensure port `8888` is not blocked or used by another application on their machine.
+We have refined the authentication system for a better user experience:
+- **Simplified Login**: Sign in using your **Username** and Password (Email is no longer required for local login).
+- **Simplified Registration**: The "Full Name" field has been removed to streamline account creation.
+- **Validation**:
+    - Usernames must be at least 3 characters.
+    - Passwords must be at least 6 characters.
+    - Email formats are strictly validated during registration.
+
+## Troubleshooting
+
+1.  **Database Connection Failed**:
+    - Ensure your `REMOTE_DB_URL` in `src/main/resources/google_oauth.properties` is correct.
+    - If you see a "password authentication failed" error, check with the team lead for the latest **Database Password** from the Supabase dashboard.
+    - Ensure you are on a network that permits outgoing connections to port `5432`.
+2.  **Google Sign-in Issues**:
+    - Ensure `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are correctly set.
+    - New team members must be added as **"Test users"** in the Google Cloud Console's OAuth consent screen by the project owner.
 
 ## Quick Start
 
-1. Ensure Java 17 and Maven are installed.
-2. Configure `src/main/resources/google_oauth.properties` (see `google_oauth.properties.example`).
-3. Run with: `mvn clean compile exec:java`
+1.  **Java Environment**: Ensure Java 17 and Maven are installed.
+2.  **Configuration**: 
+    - Copy `google_oauth.properties.example` to `src/main/resources/google_oauth.properties`.
+    - Fill in the `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `REMOTE_DB_URL` provided by the team lead.
+3.  **Run**: `mvn clean compile exec:java`
