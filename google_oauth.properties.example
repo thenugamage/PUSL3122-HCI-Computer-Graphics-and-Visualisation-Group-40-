@@ -8,3 +8,8 @@
 
 GOOGLE_CLIENT_ID=your_client_id_here
 GOOGLE_CLIENT_SECRET=your_client_secret_here
+
+# Remote Database Configuration (Optional)
+# If using a centralized database (PostgreSQL), provide the JDBC URL here.
+# Example: jdbc:postgresql://your-db-host:5432/your-db-name?user=your-user&password=your-password
+REMOTE_DB_URL=

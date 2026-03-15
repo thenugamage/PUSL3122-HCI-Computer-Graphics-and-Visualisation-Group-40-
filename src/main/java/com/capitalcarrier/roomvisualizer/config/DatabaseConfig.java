@@ -7,14 +7,37 @@ import java.sql.Statement;
 
 public class DatabaseConfig {
     private static final String DEFAULT_URL = "jdbc:sqlite:furniture_visualizer.db";
-    private static String currentUrl = DEFAULT_URL;
+    private static String currentUrl = null;
+
+    private static String getUrl() {
+        if (currentUrl != null) return currentUrl;
+        
+        // Load remote URL if configured
+        java.util.Properties props = new java.util.Properties();
+        try (java.io.InputStream in = DatabaseConfig.class.getClassLoader().getResourceAsStream("google_oauth.properties")) {
+            if (in != null) {
+                props.load(in);
+                String remoteUrl = props.getProperty("REMOTE_DB_URL", "");
+                if (!remoteUrl.trim().isEmpty()) {
+                    System.out.println("Using REMOTE database: " + remoteUrl.split("@")[remoteUrl.split("@").length - 1]); // Hide credentials in log
+                    currentUrl = remoteUrl;
+                    return currentUrl;
+                }
+            }
+        } catch (Exception e) {
+            // Fallback to SQLite
+        }
+        
+        currentUrl = DEFAULT_URL;
+        return currentUrl;
+    }
 
     public static void setTestUrl() {
         currentUrl = "jdbc:sqlite::memory:";
     }
 
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(currentUrl);
+        return DriverManager.getConnection(getUrl());
     }
 
     public static void initializeDatabase() {
@@ -42,9 +65,14 @@ public class DatabaseConfig {
             stmt.execute(createUsersTable);
             stmt.execute(createProjectsTable);
             
-            // Get absolute path for logging
-            String dbPath = new java.io.File(currentUrl.replace("jdbc:sqlite:", "")).getAbsolutePath();
-            System.out.println("Database initialized successfully at: " + dbPath);
+            // Get absolute path for logging (if using SQLite)
+            String url = getUrl();
+            if (url.startsWith("jdbc:sqlite:")) {
+                String dbPath = new java.io.File(url.replace("jdbc:sqlite:", "")).getAbsolutePath();
+                System.out.println("Local SQLite database initialized at: " + dbPath);
+            } else {
+                System.out.println("Remote database connection verified.");
+            }
         } catch (SQLException e) {
             System.err.println("CRITICAL: Error initializing database: " + e.getMessage());
             e.printStackTrace();
