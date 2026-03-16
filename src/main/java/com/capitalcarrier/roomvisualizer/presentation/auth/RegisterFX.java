@@ -163,6 +163,14 @@ public class RegisterFX {
             "-fx-background-radius: 12;" +
             "-fx-cursor: hand;"
         );
+        googleBtn.setOnAction(e -> {
+            try {
+                AuthService.loginWithGoogle();
+                new com.capitalcarrier.roomvisualizer.presentation.dashboard.DashboardFX().start(stage);
+            } catch (Exception ex) {
+                showAlert("Google Sign Up Error", ex.getMessage(), Alert.AlertType.ERROR);
+            }
+        });
 
         javafx.scene.layout.HBox bottomBox = new javafx.scene.layout.HBox(20);
         bottomBox.setAlignment(Pos.CENTER);

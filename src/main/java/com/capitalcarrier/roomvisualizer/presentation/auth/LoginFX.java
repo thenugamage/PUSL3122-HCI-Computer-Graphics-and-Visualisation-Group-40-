@@ -149,6 +149,14 @@ public class LoginFX {
             "-fx-background-radius: 12;" +
             "-fx-cursor: hand;"
         );
+        googleBtn.setOnAction(e -> {
+            try {
+                AuthService.loginWithGoogle();
+                openDashboard(stage);
+            } catch (Exception ex) {
+                showAlert("Google Sign In Error", ex.getMessage());
+            }
+        });
 
         javafx.scene.layout.HBox bottomBox = new javafx.scene.layout.HBox(20);
         bottomBox.setAlignment(Pos.CENTER);
