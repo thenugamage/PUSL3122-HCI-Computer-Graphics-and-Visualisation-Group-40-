@@ -148,16 +148,23 @@ public class LoginFX {
     }
 
     private void drawPreciseBackground(StackPane root) {
-        SVGPath purpleShape = new SVGPath();
-        purpleShape.setContent("M0 0 H650 C500 300 500 500 650 800 H0 Z"); 
-        // Vibrant Purple: #8B5CF6
-        purpleShape.setFill(Color.web("#8B5CF6")); 
+        // Create a large circle for the sweeping arc shown in the theme image
+        Circle purpleCircle = new Circle(950);
+        purpleCircle.setFill(Color.web("#8B5CF6"));
         
-        purpleShape.setScaleX(1.4);
-        purpleShape.setScaleY(1.1);
+        // Position it to match the overlap in the mockup (Approx 60% coverage on left)
+        purpleCircle.setTranslateX(-450); 
+        purpleCircle.setTranslateY(0);
         
-        root.getChildren().add(0, purpleShape);
-        StackPane.setAlignment(purpleShape, Pos.CENTER_LEFT);
+        // Add drop shadow for depth as seen in some UI versions
+        DropShadow ds = new DropShadow();
+        ds.setRadius(50);
+        ds.setOffsetX(10);
+        ds.setColor(Color.color(0, 0, 0, 0.2));
+        purpleCircle.setEffect(ds);
+
+        root.getChildren().add(0, purpleCircle);
+        StackPane.setAlignment(purpleCircle, Pos.CENTER_LEFT);
     }
 
     private VBox createInputWithIcon(String labelStr, String prompt, String svgPath, boolean isPassword) {
