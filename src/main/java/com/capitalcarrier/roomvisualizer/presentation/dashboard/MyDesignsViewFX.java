@@ -180,6 +180,20 @@ public class MyDesignsViewFX extends VBox {
         Button openBtn = createSmallButton("Open", "#6C37DC");
         openBtn.setOnAction(e -> DashboardFX.getInstance().showEditor(project.getRoom(), project.getId()));
         Button deleteBtn = createSmallButton("Delete", "#50141E");
+        deleteBtn.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this design?", ButtonType.YES, ButtonType.NO);
+            alert.showAndWait();
+            if (alert.getResult() == ButtonType.YES) {
+                try {
+                    DesignService.deleteDesign(project.getId());
+                    loadDesigns();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    Alert err = new Alert(Alert.AlertType.ERROR, "Failed to delete design.", ButtonType.OK);
+                    err.show();
+                }
+            }
+        });
         actions.getChildren().addAll(openBtn, deleteBtn);
 
         info.getChildren().addAll(name, dims, meta, actions);
