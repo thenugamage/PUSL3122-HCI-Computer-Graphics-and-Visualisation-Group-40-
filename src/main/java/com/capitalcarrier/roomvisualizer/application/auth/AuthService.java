@@ -280,4 +280,47 @@ public class AuthService {
             pstmt.executeUpdate();
         }
     }
+
+    public static void changePassword(String userId, String currentPassword, String newPassword) throws Exception {
+        if (currentUser == null || !currentUser.getId().equals(userId)) {
+            throw new Exception("Unauthorized");
+        }
+        
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new Exception("New password must be at least 6 characters.");
+        }
+        
+        // Fetch current to check password hash
+        String sql = "SELECT password_hash FROM users WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, userId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String existingHash = rs.getString("password_hash");
+                    if (existingHash == null) {
+                        throw new Exception("Account managed externally (e.g. Google). Cannot change password.");
+                    }
+                    if (!PasswordHasher.verifyPassword(currentPassword, existingHash)) {
+                        throw new Exception("Incorrect current password.");
+                    }
+                } else {
+                    throw new Exception("User not found.");
+                }
+            }
+        }
+        
+        // Update password
+        String newHash = PasswordHasher.hashPassword(newPassword);
+        String updateSql = "UPDATE users SET password_hash = ? WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(updateSql)) {
+            pstmt.setString(1, newHash);
+            pstmt.setString(2, userId);
+            pstmt.executeUpdate();
+            
+            // update in current user model
+            currentUser.setPasswordHash(newHash);
+        }
+    }
 }

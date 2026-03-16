@@ -12,6 +12,10 @@ import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.Scene;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class SettingsViewFX extends VBox {
 
@@ -61,11 +65,11 @@ public class SettingsViewFX extends VBox {
         VBox rows = new VBox(20);
         
         rows.getChildren().addAll(
-            createRow("Email Address", userEmail, null, null),
+            createRow("Email Address", userEmail, null, null, null),
             createDivider(),
-            createRow("Password", "••••••••••••", "Change", ThemeConfig.BRAND_PURPLE),
+            createRow("Password", "••••••••••••", "Change", ThemeConfig.BRAND_PURPLE, this::showChangePasswordDialog),
             createDivider(),
-            createRow("Username", userName, null, null)
+            createRow("Username", userName, null, null, null)
         );
 
         card.getChildren().add(rows);
@@ -93,9 +97,9 @@ public class SettingsViewFX extends VBox {
         VBox rows = new VBox(20);
 
         rows.getChildren().addAll(
-            createRow("Export Library", "Download all your room designs as a portable file", "Export ZIP", ThemeConfig.CYAN),
+            createRow("Export Library", "Download all your room designs as a portable file", "Export ZIP", ThemeConfig.CYAN, null),
             createDivider(),
-            createRow("Danger Zone", "Delete your account and all associated data permanently", "Delete Data", Color.web("#f43f5e"))
+            createRow("Danger Zone", "Delete your account and all associated data permanently", "Delete Data", Color.web("#f43f5e"), null)
         );
 
         card.getChildren().add(rows);
@@ -125,7 +129,81 @@ public class SettingsViewFX extends VBox {
         return card;
     }
 
-    private HBox createRow(String labelText, String value, String actionText, Color color) {
+    private void showChangePasswordDialog() {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initStyle(StageStyle.TRANSPARENT);
+        
+        VBox root = new VBox(20);
+        root.setPadding(new Insets(30));
+        root.setStyle("-fx-background-color: #0E1437; -fx-background-radius: 20; -fx-border-color: #232D5A; -fx-border-radius: 20; -fx-border-width: 1;");
+        root.setAlignment(Pos.CENTER);
+        
+        Text title = new Text("Change Password");
+        title.setFont(Font.font("Inter", FontWeight.BOLD, 20));
+        title.setFill(Color.WHITE);
+        
+        PasswordField curPass = new PasswordField();
+        curPass.setPromptText("Current Password");
+        curPass.setStyle("-fx-background-color: rgba(255,255,255,0.05); -fx-text-fill: white; -fx-padding: 10; -fx-background-radius: 8;");
+        curPass.setPrefWidth(250);
+
+        PasswordField newPass = new PasswordField();
+        newPass.setPromptText("New Password");
+        newPass.setStyle("-fx-background-color: rgba(255,255,255,0.05); -fx-text-fill: white; -fx-padding: 10; -fx-background-radius: 8;");
+        newPass.setPrefWidth(250);
+
+        PasswordField confirmPass = new PasswordField();
+        confirmPass.setPromptText("Confirm New Password");
+        confirmPass.setStyle("-fx-background-color: rgba(255,255,255,0.05); -fx-text-fill: white; -fx-padding: 10; -fx-background-radius: 8;");
+        confirmPass.setPrefWidth(250);
+
+        Label errorLabel = new Label();
+        errorLabel.setTextFill(Color.web("#EF4444"));
+        errorLabel.setFont(Font.font("Inter", 12));
+        errorLabel.setWrapText(true);
+        errorLabel.setAlignment(Pos.CENTER);
+
+        HBox btns = new HBox(15);
+        btns.setAlignment(Pos.CENTER);
+        
+        Button cancelBtn = new Button("Cancel");
+        cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #8C94AF; -fx-font-weight: bold; -fx-cursor: hand;");
+        cancelBtn.setOnAction(e -> dialog.close());
+        
+        Button saveBtn = new Button("Save Changes");
+        saveBtn.setStyle("-fx-background-color: #9933FF; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 12; -fx-padding: 10 25; -fx-cursor: hand;");
+        saveBtn.setOnAction(e -> {
+            errorLabel.setText("");
+            if (!newPass.getText().equals(confirmPass.getText())) {
+                errorLabel.setText("New passwords do not match.");
+                return;
+            }
+            try {
+                User user = AuthService.getCurrentUser();
+                if (user != null) {
+                    AuthService.changePassword(user.getId(), curPass.getText(), newPass.getText());
+                    dialog.close();
+                    
+                    Alert success = new Alert(Alert.AlertType.INFORMATION, "Password updated successfully.", ButtonType.OK);
+                    success.setHeaderText(null);
+                    success.show();
+                }
+            } catch (Exception ex) {
+                errorLabel.setText(ex.getMessage());
+            }
+        });
+        
+        btns.getChildren().addAll(cancelBtn, saveBtn);
+        root.getChildren().addAll(title, curPass, newPass, confirmPass, errorLabel, btns);
+        
+        Scene scene = new Scene(root);
+        scene.setFill(Color.TRANSPARENT);
+        dialog.setScene(scene);
+        dialog.showAndWait();
+    }
+
+    private HBox createRow(String labelText, String value, String actionText, Color color, Runnable action) {
         HBox row = new HBox();
         row.setAlignment(Pos.CENTER_LEFT);
         
@@ -148,6 +226,9 @@ public class SettingsViewFX extends VBox {
             btn.setStyle(String.format("-fx-background-color: rgba(%d,%d,%d,0.1); -fx-text-fill: #%02X%02X%02X; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 8 18; -fx-cursor: hand;",
                 (int)(color.getRed()*255), (int)(color.getGreen()*255), (int)(color.getBlue()*255),
                 (int)(color.getRed()*255), (int)(color.getGreen()*255), (int)(color.getBlue()*255)));
+            btn.setOnAction(e -> {
+                if (action != null) action.run();
+            });
             row.getChildren().add(btn);
         }
         
