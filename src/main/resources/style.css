@@ -23,6 +23,7 @@
 .auth-card {
     -fx-background-color: white;
     -fx-background-radius: 28;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 30, 0, 0, 15);
 }
 
 .primary-button {

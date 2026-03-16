@@ -48,10 +48,10 @@ public class RegisterFX {
         title.setFill(Color.WHITE);
         
         DropShadow titleShadow = new DropShadow();
-        titleShadow.setRadius(25);
+        titleShadow.setRadius(20);
         titleShadow.setOffsetX(0);
-        titleShadow.setOffsetY(10);
-        titleShadow.setColor(Color.color(0, 0, 0, 0.45));
+        titleShadow.setOffsetY(8);
+        titleShadow.setColor(Color.color(0, 0, 0, 0.35));
         title.setEffect(titleShadow);
 
         Text subTitle = new Text("Professional Interior Room Designer");
@@ -64,7 +64,6 @@ public class RegisterFX {
         VBox card = new VBox(20);
         card.getStyleClass().add("auth-card");
         card.setMaxWidth(500);
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 28; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 40, 0, 0, 20);");
         card.setPadding(new Insets(40, 55, 40, 55));
         card.setAlignment(Pos.CENTER_LEFT);
 
@@ -156,19 +155,17 @@ public class RegisterFX {
     }
 
     private void drawPreciseBackground(StackPane root) {
-        // Create a large circle for the sweeping arc shown in the theme image
-        Circle purpleCircle = new Circle(950);
+        // Shifting circles further left for shallow arc
+        Circle purpleCircle = new Circle(1200);
         purpleCircle.setFill(Color.web("#8B5CF6"));
         
-        // Position it to match the overlap in the mockup
-        purpleCircle.setTranslateX(-450); 
+        purpleCircle.setTranslateX(-680); 
         purpleCircle.setTranslateY(0);
         
-        // Add drop shadow for depth
         DropShadow ds = new DropShadow();
-        ds.setRadius(50);
-        ds.setOffsetX(10);
-        ds.setColor(Color.color(0, 0, 0, 0.2));
+        ds.setRadius(60);
+        ds.setOffsetX(15);
+        ds.setColor(Color.color(0, 0, 0, 0.15));
         purpleCircle.setEffect(ds);
 
         root.getChildren().add(0, purpleCircle);
