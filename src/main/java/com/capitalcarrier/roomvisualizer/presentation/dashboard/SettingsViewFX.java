@@ -61,7 +61,7 @@ public class SettingsViewFX extends VBox {
         VBox rows = new VBox(20);
         
         rows.getChildren().addAll(
-            createRow("Email Address", userEmail, "Update", ThemeConfig.BRAND_PURPLE),
+            createRow("Email Address", userEmail, null, null),
             createDivider(),
             createRow("Password", "••••••••••••", "Change", ThemeConfig.BRAND_PURPLE),
             createDivider(),
