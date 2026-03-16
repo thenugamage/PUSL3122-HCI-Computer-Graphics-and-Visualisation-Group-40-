@@ -108,9 +108,14 @@ public class DashboardFX {
         avatarInitial.setFill(Color.WHITE);
         avatar.getChildren().addAll(avatarCircle, avatarInitial);
 
-        profileGroup.getChildren().addAll(userBtn, avatar);
+        Button logoutBtn = new Button("Logout");
+        logoutBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #EF4444; -fx-border-color: rgba(239,68,68,0.3); -fx-border-radius: 12; -fx-padding: 8 16; -fx-cursor: hand; -fx-font-weight: bold;");
+        logoutBtn.setOnAction(e -> {
+            AuthService.logout();
+            new com.capitalcarrier.roomvisualizer.presentation.auth.LoginFX().start(stage);
+        });
 
-        header.getChildren().addAll(logoGroup, navMenu, profileGroup);
+        profileGroup.getChildren().addAll(userBtn, avatar, logoutBtn);
         return header;
     }
 
