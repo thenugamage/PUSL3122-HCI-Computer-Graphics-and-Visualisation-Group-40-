@@ -21,8 +21,8 @@ public class RegisterFX {
 
         StackPane root = new StackPane();
         root.setPrefSize(1200, 800);
-        // Deep Midnight Blue: #020617
-        root.setStyle("-fx-background-color: #020617;"); 
+        // Updated Navy: #091C61
+        root.setStyle("-fx-background-color: #091C61;"); 
 
         // Load global CSS
         try {

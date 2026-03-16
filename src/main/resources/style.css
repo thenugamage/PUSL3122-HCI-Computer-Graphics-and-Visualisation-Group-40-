@@ -1,7 +1,7 @@
 .root {
     /* Brand Colors */
     -fx-brand-purple: #8B5CF6;
-    -fx-brand-navy: #020617;
+    -fx-brand-navy: #091C61;
     
     /* Functional Colors */
     -fx-accent-glow: rgba(139, 92, 246, 0.4); /* Glow based on purple */
