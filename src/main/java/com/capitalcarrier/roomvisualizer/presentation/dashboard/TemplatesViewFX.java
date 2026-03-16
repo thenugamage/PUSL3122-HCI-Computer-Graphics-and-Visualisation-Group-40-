@@ -3,16 +3,12 @@ package com.capitalcarrier.roomvisualizer.presentation.dashboard;
 import com.capitalcarrier.roomvisualizer.domain.model.Room;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Ellipse;
-import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -22,6 +18,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import com.capitalcarrier.roomvisualizer.presentation.components.RoomIllustrationBuilder;
 
 public class TemplatesViewFX extends VBox {
 
@@ -104,7 +101,7 @@ public class TemplatesViewFX extends VBox {
         preview.setPrefHeight(200);
         preview.setClip(new Rectangle(350, 200) {{ setArcWidth(40); setArcHeight(40); }}); // Rounded corners top
         preview.setStyle("-fx-background-color: #141A3D; -fx-background-radius: 20 20 0 0;");
-        preview.getChildren().add(buildIllustration((String) data[0], (String) data[5], (String) data[6]));
+        preview.getChildren().add(RoomIllustrationBuilder.buildIllustration((String) data[0], (String) data[5], (String) data[6]));
 
         VBox content = new VBox(20);
         content.setPadding(new Insets(20));
@@ -196,182 +193,6 @@ public class TemplatesViewFX extends VBox {
         
         box.getChildren().addAll(r, l);
         return box;
-    }
-
-    private Node buildIllustration(String type, String wallColor, String floorColor) {
-        StackPane container = new StackPane();
-        container.setPrefSize(350, 200);
-        
-        Pane roomBox = new Pane();
-        double w = 350;
-        double h = 200;
-        double inset = 40;
-        
-        // Floor
-        Polygon floor = new Polygon(
-            0, h,
-            w, h,
-            w - inset, h - inset,
-            inset, h - inset
-        );
-        floor.setFill(Color.web(floorColor));
-        floor.setOpacity(0.8);
-        
-        // Back Wall
-        Rectangle backWall = new Rectangle(inset, inset, w - 2 * inset, h - 2 * inset);
-        backWall.setFill(Color.web(wallColor));
-        
-        // Left Wall
-        Polygon leftWall = new Polygon(
-            0, 0,
-            inset, inset,
-            inset, h - inset,
-            0, h
-        );
-        leftWall.setFill(Color.web(wallColor));
-        leftWall.setOpacity(0.6);
-        
-        // Right Wall
-        Polygon rightWall = new Polygon(
-            w, 0,
-            w - inset, inset,
-            w - inset, h - inset,
-            w, h
-        );
-        rightWall.setFill(Color.web(wallColor));
-        rightWall.setOpacity(0.6);
-        
-        // Ceiling
-        Polygon ceiling = new Polygon(
-            0, 0,
-            w, 0,
-            w - inset, inset,
-            inset, inset
-        );
-        ceiling.setFill(Color.web(wallColor));
-        ceiling.setOpacity(0.4);
-        
-        roomBox.getChildren().addAll(floor, backWall, leftWall, rightWall, ceiling);
-
-        // Room-specific furniture (detailed shapes to match the mockup)
-        Group furniture = new Group();
-        switch (type) {
-            case "Living Room":
-                // Purple Sofa
-                Rectangle sofa = new Rectangle(60, 120, 160, 35);
-                sofa.setFill(Color.web("#5E35B1"));
-                sofa.setArcWidth(10); sofa.setArcHeight(10);
-                
-                // Back of sofa
-                Rectangle sofaBack = new Rectangle(60, 105, 160, 20);
-                sofaBack.setFill(Color.web("#4527A0"));
-                sofaBack.setArcWidth(10); sofaBack.setArcHeight(10);
-                
-                // Lamp/Plant
-                Rectangle pot = new Rectangle(240, 130, 12, 15);
-                pot.setFill(Color.web("#5D4037"));
-                Circle plant = new Circle(246, 120, 10);
-                plant.setFill(Color.web("#2E7D32"));
-                
-                furniture.getChildren().addAll(sofaBack, sofa, pot, plant);
-                break;
-                
-            case "Bedroom":
-                // Bed
-                Rectangle bedFrame = new Rectangle(100, 100, 150, 60);
-                bedFrame.setFill(Color.web("#4527A0"));
-                bedFrame.setArcWidth(10); bedFrame.setArcHeight(10);
-                
-                Rectangle sheet = new Rectangle(110, 110, 130, 50);
-                sheet.setFill(Color.web("#BDBDBD"));
-                
-                Rectangle pillow1 = new Rectangle(120, 105, 40, 15);
-                Rectangle pillow2 = new Rectangle(190, 105, 40, 15);
-                pillow1.setFill(Color.web("#EEEEEE")); pillow2.setFill(Color.web("#EEEEEE"));
-                
-                // Nightstand
-                Rectangle stand = new Rectangle(70, 130, 20, 20);
-                stand.setFill(Color.web("#795548"));
-                
-                furniture.getChildren().addAll(bedFrame, sheet, pillow1, pillow2, stand);
-                break;
-                
-            case "Home Office":
-                // Desk
-                Rectangle deskTop = new Rectangle(80, 120, 190, 10);
-                deskTop.setFill(Color.web("#5D4037"));
-                Rectangle leg1 = new Rectangle(90, 130, 4, 30);
-                Rectangle leg2 = new Rectangle(256, 130, 4, 30);
-                leg1.setFill(Color.web("#3E2723")); leg2.setFill(Color.web("#3E2723"));
-                
-                // Monitor
-                Rectangle monitor = new Rectangle(140, 85, 70, 40);
-                monitor.setFill(Color.web("#263238"));
-                Rectangle stand_m = new Rectangle(170, 125, 10, 5);
-                stand_m.setFill(Color.web("#455A64"));
-                
-                // Bookshelf (colorful)
-                VBox shelf = new VBox(2);
-                shelf.setLayoutX(280); shelf.setLayoutY(70);
-                for (String c : new String[]{"#E53935", "#43A047", "#1E88E5", "#FDD835", "#8E24AA"}) {
-                    Rectangle r = new Rectangle(15, 8); r.setFill(Color.web(c));
-                    shelf.getChildren().add(r);
-                }
-                
-                furniture.getChildren().addAll(leg1, leg2, deskTop, monitor, stand_m, shelf);
-                break;
-                
-            case "Dining Room":
-                // Table
-                Ellipse table = new Ellipse(w/2, 140, 80, 40);
-                table.setFill(Color.web("#795548"));
-                
-                // Chairs (circles)
-                for (int i=0; i<4; i++) {
-                    double angle = i * Math.PI / 2 + Math.PI/4;
-                    Circle chair = new Circle(w/2 + Math.cos(angle)*70, 140 + Math.sin(angle)*30, 12);
-                    chair.setFill(Color.web("#C62828"));
-                    furniture.getChildren().add(chair);
-                }
-                furniture.getChildren().add(table);
-                break;
-                
-            case "Kitchen":
-                // Cabinets
-                HBox cabinets = new HBox(2);
-                cabinets.setLayoutX(80); cabinets.setLayoutY(140);
-                for(int i=0; i<4; i++) {
-                    Rectangle c = new Rectangle(40, 40); c.setFill(Color.web("#8D6E63"));
-                    c.setStroke(Color.web("#5D4037"));
-                    cabinets.getChildren().add(c);
-                }
-                // Countertop
-                Rectangle counter = new Rectangle(inset, 135, w-2*inset, 5);
-                counter.setFill(Color.web("#EEEEEE"));
-                
-                // Upper wall detail
-                Rectangle upper = new Rectangle(inset, inset, w-2*inset, 60);
-                upper.setFill(Color.web("#A1887F"));
-                
-                furniture.getChildren().addAll(upper, counter, cabinets);
-                break;
-                
-            case "Bathroom":
-                // Bathtub
-                Rectangle tub = new Rectangle(100, 130, 180, 40);
-                tub.setFill(Color.web("#CFD8DC"));
-                tub.setArcWidth(40); tub.setArcHeight(40);
-                
-                Rectangle water = new Rectangle(110, 135, 150, 20);
-                water.setFill(Color.web("#81D4FA", 0.6));
-                water.setArcWidth(30); water.setArcHeight(30);
-                
-                furniture.getChildren().addAll(tub, water);
-                break;
-        }
-        
-        container.getChildren().addAll(roomBox, furniture);
-        return container;
     }
 
     private void showCustomRoomDialog() {

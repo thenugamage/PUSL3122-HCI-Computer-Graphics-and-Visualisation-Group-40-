@@ -12,6 +12,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.shape.Rectangle;
+import com.capitalcarrier.roomvisualizer.presentation.components.RoomIllustrationBuilder;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -143,10 +145,20 @@ public class MyDesignsViewFX extends VBox {
         card.setCursor(javafx.scene.Cursor.HAND);
         card.setOnMouseClicked(e -> DashboardFX.getInstance().showEditor(project.getRoom(), project.getId()));
 
-        // Preview Area (Simplified for now, just a placeholder color)
+        // Preview Area with 2.5D Illustration
         StackPane preview = new StackPane();
         preview.setPrefHeight(160);
         preview.setStyle("-fx-background-color: #140F2D; -fx-background-radius: 16 16 0 0;");
+        preview.setClip(new Rectangle(350, 160) {{ setArcWidth(32); setArcHeight(32); }});
+        
+        Room r = project.getRoom();
+        String wallColor = r != null ? r.getWallColor() : "#E0D2C8";
+        String floorColor = r != null ? r.getFloorColor() : "#A08764";
+        
+        Node illustration = RoomIllustrationBuilder.buildIllustration(project.getName(), wallColor, floorColor);
+        illustration.setScaleX(0.8);
+        illustration.setScaleY(0.8);
+        preview.getChildren().add(illustration);
         
         VBox info = new VBox(8);
         info.setPadding(new Insets(14, 16, 16, 16));
@@ -155,7 +167,6 @@ public class MyDesignsViewFX extends VBox {
         name.setFont(Font.font("Inter", FontWeight.BOLD, 15));
         name.setFill(Color.WHITE);
 
-        Room r = project.getRoom();
         String dimText = r != null ? String.format("%.1fm \u00d7 %.1fm \u00d7 %.1fm", r.getWidth(), r.getLength(), r.getHeight()) : "0m \u00d7 0m \u00d7 0m";
         Text dims = new Text(dimText);
         dims.setFont(Font.font("Inter", 12));
