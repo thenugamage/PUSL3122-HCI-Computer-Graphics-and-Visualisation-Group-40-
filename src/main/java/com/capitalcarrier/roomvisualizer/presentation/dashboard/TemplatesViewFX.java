@@ -73,7 +73,7 @@ public class TemplatesViewFX extends VBox {
 
         Button customBtn = new Button("+ Create Custom Room");
         customBtn.setStyle("-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 12; -fx-padding: 10 20; -fx-cursor: hand;");
-        customBtn.setOnAction(e -> showCustomRoomDialog());
+        customBtn.setOnAction(e -> showCustomRoomDialog("Custom Room", 6.0, 8.0, 3.0, "#E0D2C8", "#A08764"));
         
         header.getChildren().addAll(titlePanel, spacer, customBtn);
         return header;
@@ -150,7 +150,11 @@ public class TemplatesViewFX extends VBox {
         
         Button editBtn = new Button("Edit");
         editBtn.setPrefWidth(70);
-        editBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.2); -fx-border-radius: 12; -fx-padding: 12;");
+        editBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.2); -fx-border-radius: 12; -fx-padding: 12; -fx-cursor: hand;");
+        editBtn.setOnAction(e -> showCustomRoomDialog(
+            (String) data[0], (double) data[2], (double) data[3], (double) data[4],
+            (String) data[5], (String) data[6]
+        ));
 
         actions.getChildren().addAll(useBtn, editBtn);
 
@@ -195,7 +199,7 @@ public class TemplatesViewFX extends VBox {
         return box;
     }
 
-    private void showCustomRoomDialog() {
+    private void showCustomRoomDialog(String initName, double initW, double initL, double initH, String wallC, String floorC) {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initStyle(StageStyle.TRANSPARENT);
@@ -205,7 +209,7 @@ public class TemplatesViewFX extends VBox {
         root.setStyle("-fx-background-color: #0E1437; -fx-background-radius: 20; -fx-border-color: #232D5A; -fx-border-radius: 20; -fx-border-width: 1;");
         root.setAlignment(Pos.CENTER);
         
-        Text title = new Text("Custom Room Dimensions");
+        Text title = new Text("Customize Room Dimensions");
         title.setFont(Font.font("Inter", FontWeight.BOLD, 20));
         title.setFill(Color.WHITE);
         
@@ -213,9 +217,9 @@ public class TemplatesViewFX extends VBox {
         grid.setHgap(15); grid.setVgap(15);
         grid.setAlignment(Pos.CENTER);
         
-        TextField wField = createStyledField("Width (m)", "6.0");
-        TextField lField = createStyledField("Length (m)", "8.0");
-        TextField hField = createStyledField("Height (m)", "3.0");
+        TextField wField = createStyledField("Width (m)", String.valueOf(initW));
+        TextField lField = createStyledField("Length (m)", String.valueOf(initL));
+        TextField hField = createStyledField("Height (m)", String.valueOf(initH));
         
         grid.add(new Label("Width") {{ setTextFill(Color.web(TEXT_MUTED)); }}, 0, 0);
         grid.add(wField, 1, 0);
@@ -227,7 +231,7 @@ public class TemplatesViewFX extends VBox {
         HBox btns = new HBox(15);
         btns.setAlignment(Pos.CENTER);
         
-        Button createBtn = new Button("Create Room");
+        Button createBtn = new Button("Open Editor");
         createBtn.setStyle("-fx-background-color: " + PURPLE + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 12; -fx-padding: 10 25; -fx-cursor: hand;");
         
         Button cancelBtn = new Button("Cancel");
@@ -236,12 +240,12 @@ public class TemplatesViewFX extends VBox {
         createBtn.setOnAction(e -> {
             try {
                 Room room = new Room();
-                room.setName("Custom Room");
+                room.setName(initName.equals("Custom Room") ? "Custom Room" : initName + " (Custom)");
                 room.setWidth(Double.parseDouble(wField.getText()));
                 room.setLength(Double.parseDouble(lField.getText()));
                 room.setHeight(Double.parseDouble(hField.getText()));
-                room.setWallColor("#E0D2C8");
-                room.setFloorColor("#A08764");
+                room.setWallColor(wallC != null ? wallC : "#E0D2C8");
+                room.setFloorColor(floorC != null ? floorC : "#A08764");
                 dialog.close();
                 DashboardFX.getInstance().showEditor(room, null);
             } catch (Exception ex) {}
