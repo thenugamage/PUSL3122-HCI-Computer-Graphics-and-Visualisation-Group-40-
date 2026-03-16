@@ -1,0 +1,42 @@
+.root {
+    /* Brand Colors */
+    -fx-brand-purple: #8B5CF6;
+    -fx-brand-navy: #020617;
+    
+    /* Functional Colors */
+    -fx-accent-glow: rgba(139, 92, 246, 0.4); /* Glow based on purple */
+    -fx-input-bg: #f8fafc;
+    -fx-border-color: #f1f5f9;
+}
+
+.title-text {
+    -fx-font-family: "Georgia";
+    -fx-font-weight: bold;
+    -fx-fill: white;
+}
+
+.sub-title-text {
+    -fx-font-family: "Inter";
+    -fx-fill: rgba(255, 255, 255, 0.9);
+}
+
+.auth-card {
+    -fx-background-color: white;
+    -fx-background-radius: 28;
+}
+
+.primary-button {
+    -fx-background-color: linear-gradient(to right, -fx-brand-purple, #a855f7);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 14;
+    -fx-cursor: hand;
+}
+
+.secondary-button {
+    -fx-background-color: transparent;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-cursor: hand;
+}

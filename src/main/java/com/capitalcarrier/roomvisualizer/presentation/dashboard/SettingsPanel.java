@@ -1,235 +1,280 @@
 package com.capitalcarrier.roomvisualizer.presentation.dashboard;
 
 import com.capitalcarrier.roomvisualizer.application.auth.AuthService;
+import com.capitalcarrier.roomvisualizer.config.ThemeConfig;
 import com.capitalcarrier.roomvisualizer.domain.model.User;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.geom.RoundRectangle2D;
 
 public class SettingsPanel extends JPanel {
 
-    private Color bgColor = new Color(13, 17, 30);
-    private Color cardColor = new Color(20, 26, 45);
-    private Color borderColor = new Color(35, 45, 75);
-    private Color accentColor = new Color(143, 85, 255);
-
     public SettingsPanel() {
-        setBackground(bgColor);
+        setBackground(ThemeConfig.BACKGROUND);
         setLayout(new BorderLayout());
-        
-        // Main container
-        JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        contentPanel.setBackground(bgColor);
-        contentPanel.setBorder(new EmptyBorder(30, 40, 30, 40));
 
-        // Header
-        JLabel headerLabel = new JLabel("Settings");
-        headerLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
-        headerLabel.setForeground(Color.WHITE);
-        headerLabel.setIcon(UIManager.getIcon("Tree.leafIcon")); // Using a generic icon as placeholder
-        
-        JLabel subHeaderLabel = new JLabel("Manage your preferences and application settings");
-        subHeaderLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        subHeaderLabel.setForeground(new Color(150, 160, 180));
+        // Header Section
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 40, 40));
+        headerPanel.setOpaque(false);
+        JLabel titleLabel = new JLabel("Settings");
+        titleLabel.setFont(new Font("Inter", Font.BOLD, 36));
+        titleLabel.setForeground(Color.WHITE);
+        headerPanel.add(titleLabel);
 
-        JPanel headerPanel = new JPanel(new GridLayout(2, 1));
-        headerPanel.setBackground(bgColor);
-        headerPanel.add(headerLabel);
-        headerPanel.add(subHeaderLabel);
-        headerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        headerPanel.setMaximumSize(new Dimension(800, 60));
+        // Content Section
+        JPanel content = new JPanel();
+        content.setBackground(ThemeConfig.BACKGROUND);
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+        content.setBorder(new EmptyBorder(0, 40, 40, 40));
 
-        contentPanel.add(headerPanel);
-        contentPanel.add(Box.createVerticalStrut(30));
+        content.add(buildAccountSection());
+        content.add(Box.createVerticalStrut(30));
+        content.add(buildEditorSection());
+        content.add(Box.createVerticalStrut(30));
+        content.add(buildDataSection());
+        content.add(Box.createVerticalStrut(50));
+        content.add(buildFooter());
 
-        // Sections
-        contentPanel.add(createAccountSection());
-        contentPanel.add(Box.createVerticalStrut(20));
-        contentPanel.add(createEditorPreferencesSection());
-        contentPanel.add(Box.createVerticalStrut(20));
-        contentPanel.add(createDataManagementSection());
-        contentPanel.add(Box.createVerticalStrut(20));
-        contentPanel.add(createFooter());
-
-        JScrollPane scrollPane = new JScrollPane(contentPanel);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        JScrollPane scrollPane = new JScrollPane(content);
+        scrollPane.setBorder(null);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        scrollPane.setBackground(bgColor);
-        scrollPane.getViewport().setBackground(bgColor);
+        scrollPane.getViewport().setBackground(ThemeConfig.BACKGROUND);
+        
+        add(headerPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
     }
 
-    private JPanel createSettingsCard(String title) {
-        JPanel card = new JPanel();
-        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBackground(cardColor);
-        card.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(borderColor, 1, true),
-                new EmptyBorder(20, 25, 20, 25)
-        ));
-        card.setAlignmentX(Component.LEFT_ALIGNMENT);
-        card.setMaximumSize(new Dimension(800, 500));
+    private JPanel buildAccountSection() {
+        User user = AuthService.getCurrentUser();
+        String userEmail = user != null ? user.getEmail() : "user@example.com";
+        String userName = user != null ? user.getUsername() : "Username";
 
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-        titleLabel.setForeground(Color.WHITE);
-        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
-        card.add(titleLabel);
-        card.add(Box.createVerticalStrut(20));
+        JPanel card = createGlassCard("Account Settings", "user");
+        JPanel rows = new JPanel();
+        rows.setLayout(new BoxLayout(rows, BoxLayout.Y_AXIS));
+        rows.setOpaque(false);
+
+        rows.add(createRow("Email Address", userEmail, "Change Email", ThemeConfig.ACCENT_PURPLE));
+        rows.add(createDivider());
+        rows.add(createRow("Password", "••••••••••••", "Change Password", ThemeConfig.ACCENT_PURPLE));
+        rows.add(createDivider());
+        rows.add(createRow("Username", userName, null, null));
+
+        card.add(rows, BorderLayout.CENTER);
         return card;
     }
 
-    private JPanel createRow(String label, String valueOrDesc, JComponent control) {
-        JPanel row = new JPanel(new BorderLayout());
-        row.setBackground(cardColor);
-        row.setMaximumSize(new Dimension(800, 60));
+    private JPanel buildEditorSection() {
+        JPanel card = createGlassCard("Editor Preferences", "settings");
+        JPanel rows = new JPanel();
+        rows.setLayout(new BoxLayout(rows, BoxLayout.Y_AXIS));
+        rows.setOpaque(false);
 
-        JPanel infoPanel = new JPanel(new GridLayout(2, 1));
-        infoPanel.setBackground(cardColor);
-        JLabel titleLabel = new JLabel(label);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
+        rows.add(createControlRow("Measurement Units", new String[]{"Meters (m)", "Feet (ft)", "Centimeters (cm)"}));
+        rows.add(createDivider());
+        rows.add(createControlRow("Grid Spacing", new String[]{"0.1m", "0.5m", "1.0m"}));
+        rows.add(createDivider());
+        
+        JPanel toggleRow = new JPanel(new BorderLayout());
+        toggleRow.setOpaque(false);
+        JLabel label = new JLabel("Auto-save Designs");
+        label.setFont(new Font("Inter", Font.PLAIN, 15));
+        label.setForeground(ThemeConfig.GLASS_TEXT);
+        JCheckBox toggle = new JCheckBox();
+        toggle.setSelected(true);
+        toggle.setOpaque(false);
+        toggleRow.add(label, BorderLayout.WEST);
+        toggleRow.add(toggle, BorderLayout.EAST);
+        rows.add(toggleRow);
+
+        card.add(rows, BorderLayout.CENTER);
+        return card;
+    }
+
+    private JPanel buildDataSection() {
+        JPanel card = createGlassCard("Data Management", "data");
+        JPanel rows = new JPanel();
+        rows.setLayout(new BoxLayout(rows, BoxLayout.Y_AXIS));
+        rows.setOpaque(false);
+
+        rows.add(createRow("Export Data", "Download a local backup of all designs.", "Download ZIP", ThemeConfig.ACCENT_CYAN));
+        rows.add(createDivider());
+        rows.add(createRow("Clear All Data", "Permanently delete all saved designs.", "Delete All", new Color(255, 70, 70)));
+
+        card.add(rows, BorderLayout.CENTER);
+        return card;
+    }
+
+    private JPanel createGlassCard(String title, String iconType) {
+        JPanel card = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Glass Body
+                g2.setColor(ThemeConfig.GLASS_BG);
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), ThemeConfig.CARD_ROUNDING, ThemeConfig.CARD_ROUNDING));
+                
+                // Border highlight
+                g2.setStroke(new BasicStroke(1.2f));
+                g2.setColor(ThemeConfig.GLASS_BORDER);
+                g2.draw(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, ThemeConfig.CARD_ROUNDING, ThemeConfig.CARD_ROUNDING));
+                
+                g2.dispose();
+            }
+        };
+        card.setOpaque(false);
+        card.setLayout(new BorderLayout(20, 25));
+        card.setBorder(new EmptyBorder(30, 35, 30, 35));
+        card.setMaximumSize(new Dimension(1000, 400));
+        card.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JPanel header = new JPanel(new BorderLayout(15, 0));
+        header.setOpaque(false);
+        
+        // Section Icon (Simple Geometric Representation)
+        JPanel iconPlaceholder = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(ThemeConfig.ACCENT_PURPLE);
+                if (iconType.equals("user")) {
+                    g2.fillOval(4, 2, 10, 10);
+                    g2.fillArc(0, 12, 18, 12, 0, 180);
+                } else if (iconType.equals("settings")) {
+                    g2.setStroke(new BasicStroke(2));
+                    g2.drawOval(4, 4, 10, 10);
+                    for(int i=0; i<8; i++) {
+                        g2.rotate(Math.toRadians(45), 9, 9);
+                        g2.fillRect(8, 0, 2, 4);
+                    }
+                } else {
+                    g2.fillRect(2, 2, 14, 4);
+                    g2.fillRect(2, 8, 14, 4);
+                    g2.fillRect(2, 14, 14, 4);
+                }
+                g2.dispose();
+            }
+        };
+        iconPlaceholder.setPreferredSize(new Dimension(24, 24));
+        iconPlaceholder.setOpaque(false);
+
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Inter", Font.BOLD, 20));
         titleLabel.setForeground(Color.WHITE);
-        
-        JLabel descLabel = new JLabel(valueOrDesc);
-        descLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        descLabel.setForeground(new Color(150, 160, 180));
-        
-        infoPanel.add(titleLabel);
-        infoPanel.add(descLabel);
 
-        row.add(infoPanel, BorderLayout.CENTER);
+        header.add(iconPlaceholder, BorderLayout.WEST);
+        header.add(titleLabel, BorderLayout.CENTER);
         
-        if (control != null) {
-            JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 10));
-            controlPanel.setBackground(cardColor);
-            controlPanel.add(control);
-            row.add(controlPanel, BorderLayout.EAST);
+        card.add(header, BorderLayout.NORTH);
+        return card;
+    }
+
+    private JPanel createRow(String label, String value, JButton action) {
+        JPanel row = new JPanel(new BorderLayout());
+        row.setOpaque(false);
+
+        JPanel info = new JPanel();
+        info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
+        info.setOpaque(false);
+        
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("Inter", Font.BOLD, 14));
+        lbl.setForeground(ThemeConfig.GLASS_SUBTEXT);
+        
+        JLabel val = new JLabel(value);
+        val.setFont(new Font("Inter", Font.PLAIN, 16));
+        val.setForeground(ThemeConfig.GLASS_TEXT);
+        
+        info.add(lbl);
+        info.add(Box.createVerticalStrut(4));
+        info.add(val);
+
+        row.add(info, BorderLayout.CENTER);
+        if (action != null) {
+            row.add(action, BorderLayout.EAST);
         }
-        
+
         return row;
     }
 
-    private JPanel createAccountSection() {
-        JPanel card = createSettingsCard("Account");
-        User user = AuthService.getCurrentUser();
-        
-        String email = user != null && user.getEmail() != null ? user.getEmail() : "Not Logged In";
-        card.add(createRow("Email", email, createSecondaryButton("Change Email")));
-        card.add(createDivider());
-        
-        card.add(createRow("Password", "********", createSecondaryButton("Change Password")));
-        card.add(createDivider());
-        
-        card.add(createRow("Current Role", "Designer (or User depending on logic)", null));
-        return card;
+    private JPanel createRow(String label, String value, String actionText, Color actionColor) {
+        return createRow(label, value, actionText != null ? createActionButton(actionText, actionColor) : null);
     }
 
-    private JPanel createEditorPreferencesSection() {
-        JPanel card = createSettingsCard("Editor Preferences");
+    private JPanel createControlRow(String labelText, String[] options) {
+        JPanel row = new JPanel(new BorderLayout());
+        row.setOpaque(false);
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Inter", Font.BOLD, 15));
+        label.setForeground(ThemeConfig.GLASS_TEXT);
         
-        JComboBox<String> unitCombo = createComboBox(new String[]{"Metric (m)", "Imperial (ft)"});
-        card.add(createRow("Measurement Units", "Choose between metric (meters) or imperial (feet)", unitCombo));
-        card.add(createDivider());
+        JComboBox<String> combo = new JComboBox<>(options);
+        combo.setBackground(ThemeConfig.DEEP_NAVY);
+        combo.setForeground(Color.WHITE);
+        combo.setPreferredSize(new Dimension(180, 36));
         
-        JComboBox<String> gridCombo = createComboBox(new String[]{"0.5m", "1.0m", "2.0m"});
-        card.add(createRow("Grid Size", "Default grid size for 2D view", gridCombo));
-        card.add(createDivider());
-        
-        // A simple toggle switch using a JCheckBox styled
-        JCheckBox autoSaveCheck = new JCheckBox();
-        autoSaveCheck.setSelected(true);
-        autoSaveCheck.setBackground(cardColor);
-        autoSaveCheck.setOpaque(true);
-        card.add(createRow("Auto-save", "Automatically save changes while editing", autoSaveCheck));
-        card.add(createDivider());
-
-        JComboBox<String> viewModeCombo = createComboBox(new String[]{"2D View", "3D View"});
-        card.add(createRow("Default View Mode", "Choose default view when opening designs", viewModeCombo));
-
-        return card;
+        row.add(label, BorderLayout.WEST);
+        row.add(combo, BorderLayout.EAST);
+        return row;
     }
 
-    private JPanel createDataManagementSection() {
-        JPanel card = createSettingsCard("Data Management");
-        
-        card.add(createRow("Storage Used", "0 designs saved locally", new JLabel("~0.0 KB", SwingConstants.RIGHT)));
-        card.add(createDivider());
-        
-        JButton exportBtn = createSecondaryButton("Download Backup");
-        card.add(createRow("Export Data", "Download all your designs as a backup", exportBtn));
-        card.add(createDivider());
-        
-        JButton deleteBtn = new JButton("Delete All Designs");
-        styleDeleteButton(deleteBtn);
-        card.add(createRow("Clear All Data", "Permanently delete all designs from local storage", deleteBtn));
-
-        return card;
-    }
-
-    private JPanel createFooter() {
-        JPanel footer = new JPanel(new GridLayout(2, 1));
-        footer.setBackground(cardColor);
-        footer.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(borderColor, 1, true),
-                new EmptyBorder(15, 0, 15, 0)
-        ));
-        footer.setMaximumSize(new Dimension(800, 80));
-        
-        JLabel brand = new JLabel("Furniture Room Visualizer", SwingConstants.CENTER);
-        brand.setFont(new Font("SansSerif", Font.BOLD, 14));
-        brand.setForeground(Color.WHITE);
-        
-        JLabel version = new JLabel("Version 1.0.0 | © 2026 Room Visualizer", SwingConstants.CENTER);
-        version.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        version.setForeground(new Color(150, 160, 180));
-        
-        footer.add(brand);
-        footer.add(version);
-        return footer;
+    private JButton createActionButton(String text, Color color) {
+        JButton btn = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(color);
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), ThemeConfig.PILL_ROUNDING, ThemeConfig.PILL_ROUNDING));
+                super.paintComponent(g);
+                g2.dispose();
+            }
+        };
+        btn.setFont(new Font("Inter", Font.BOLD, 13));
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setMargin(new Insets(10, 22, 10, 22));
+        return btn;
     }
 
     private JComponent createDivider() {
-        JSeparator sep = new JSeparator();
-        sep.setForeground(borderColor);
-        sep.setBackground(borderColor);
+        JSeparator s = new JSeparator();
+        s.setForeground(new Color(255, 255, 255, 20));
+        s.setBackground(new Color(255, 255, 255, 20));
         JPanel p = new JPanel(new BorderLayout());
-        p.setBackground(cardColor);
-        p.add(Box.createVerticalStrut(15), BorderLayout.NORTH);
-        p.add(sep, BorderLayout.CENTER);
-        p.add(Box.createVerticalStrut(15), BorderLayout.SOUTH);
-        p.setMaximumSize(new Dimension(800, 31));
+        p.setOpaque(false);
+        p.setBorder(new EmptyBorder(15, 0, 15, 0));
+        p.add(s);
         return p;
     }
 
-    private JButton createSecondaryButton(String text) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("SansSerif", Font.BOLD, 12));
-        btn.setForeground(Color.WHITE);
-        btn.setBackground(new Color(35, 45, 75));
-        btn.setFocusPainted(false);
-        btn.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return btn;
-    }
-    
-    private void styleDeleteButton(JButton btn) {
-        btn.setFont(new Font("SansSerif", Font.BOLD, 12));
-        btn.setForeground(new Color(255, 80, 80));
-        btn.setBackground(cardColor);
-        btn.setFocusPainted(false);
-        btn.setBorder(BorderFactory.createLineBorder(new Color(255, 80, 80), 1));
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-    }
+    private JPanel buildFooter() {
+        JPanel footer = new JPanel();
+        footer.setOpaque(false);
+        footer.setLayout(new BoxLayout(footer, BoxLayout.Y_AXIS));
+        footer.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-    private JComboBox<String> createComboBox(String[] items) {
-        JComboBox<String> combo = new JComboBox<>(items);
-        combo.setPreferredSize(new Dimension(120, 35));
-        combo.setBackground(new Color(35, 45, 75));
-        combo.setForeground(Color.WHITE);
-        return combo;
+        JLabel copy = new JLabel("Furniture Room Visualizer v1.0.0");
+        copy.setFont(new Font("Inter", Font.BOLD, 14));
+        copy.setForeground(ThemeConfig.GLASS_SUBTEXT);
+        copy.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel rights = new JLabel("© 2026 Professional Interior Design Suite. All rights reserved.");
+        rights.setFont(new Font("Inter", Font.PLAIN, 12));
+        rights.setForeground(new Color(ThemeConfig.GLASS_SUBTEXT.getRed(), ThemeConfig.GLASS_SUBTEXT.getGreen(), ThemeConfig.GLASS_SUBTEXT.getBlue(), 150));
+        rights.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        footer.add(copy);
+        footer.add(Box.createVerticalStrut(8));
+        footer.add(rights);
+        return footer;
     }
 }

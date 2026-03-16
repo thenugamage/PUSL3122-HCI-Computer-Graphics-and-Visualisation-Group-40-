@@ -160,12 +160,14 @@ public class AuthService {
     }
 
     public static User loginWithGoogle() throws Exception {
+        System.out.println("DEBUG: Starting Google Login flow...");
         NetHttpTransport httpTransport = new NetHttpTransport();
         
         Properties oauthConfig = loadOAuthConfig();
         String clientId = oauthConfig.getProperty("GOOGLE_CLIENT_ID", "");
         String clientSecret = oauthConfig.getProperty("GOOGLE_CLIENT_SECRET", "");
         if (clientId.isEmpty() || clientSecret.isEmpty()) {
+            System.err.println("DEBUG: Google OAuth credentials missing!");
             throw new Exception("Google OAuth credentials are missing in 'src/main/resources/google_oauth.properties'.");
         }
 
@@ -175,23 +177,52 @@ public class AuthService {
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 httpTransport, JSON_FACTORY, clientSecrets,
                 Arrays.asList("https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"))
+                .setAccessType("offline")
                 .build();
                 
+        System.out.println("DEBUG: Opening local receiver on port 8888. Waiting for browser callback...");
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
         Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
         
+        System.out.println("DEBUG: Authorized successfully. Fetching user info from Google APIs...");
         Oauth2 oauth2 = new Oauth2.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName("Room Visualizer").build();
         Userinfo userinfo = oauth2.userinfo().get().execute();
         
+        if (userinfo == null || userinfo.getId() == null) {
+            System.err.println("DEBUG: Failed to fetch userinfo from Google.");
+            throw new Exception("Could not retrieve user info from Google.");
+        }
+
         String googleId = userinfo.getId();
+        String email = userinfo.getEmail();
+        System.out.println("DEBUG: Google User ID: " + googleId + (email != null ? " Email: " + email : " (No Email)"));
+        
+        // 1. Check by Google ID
+        System.out.println("DEBUG: Searching database for Google ID...");
         Optional<User> existing = getUserByGoogleId(googleId);
         if (existing.isPresent()) {
+            System.out.println("DEBUG: Found existing user with Google ID. Logging in...");
             currentUser = existing.get();
             return currentUser;
         }
         
+        // 2. Check by Email (Link existing accounts)
+        if (email != null) {
+            System.out.println("DEBUG: Searching database for existing email: " + email);
+            Optional<User> existingByEmail = getUserByEmail(email);
+            if (existingByEmail.isPresent()) {
+                User user = existingByEmail.get();
+                System.out.println("DEBUG: Found local account with same email. Linking Google account...");
+                linkGoogleAccount(user.getId(), googleId);
+                user.setGoogleId(googleId);
+                currentUser = user;
+                return currentUser;
+            }
+        }
+        
+        System.out.println("DEBUG: New user detected. Creating account...");
         String id = generateId();
-        String username = userinfo.getEmail() != null ? userinfo.getEmail().split("@")[0] : "user_" + id.substring(0, 5);
+        String username = email != null ? email.split("@")[0] : "user_" + id.substring(0, 5);
         
         // Ensure username is unique
         int i = 1;
@@ -200,12 +231,13 @@ public class AuthService {
             username = baseUsername + i++;
         }
         
+        System.out.println("DEBUG: Assigning unique username: " + username);
         String sql = "INSERT INTO users (id, username, email, full_name, google_id) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, id);
             pstmt.setString(2, username);
-            pstmt.setString(3, userinfo.getEmail());
+            pstmt.setString(3, email);
             pstmt.setString(4, userinfo.getName());
             pstmt.setString(5, googleId);
             pstmt.executeUpdate();
@@ -213,11 +245,39 @@ public class AuthService {
             User user = new User();
             user.setId(id);
             user.setUsername(username);
-            user.setEmail(userinfo.getEmail());
+            user.setEmail(email);
             user.setFullName(userinfo.getName());
             user.setGoogleId(googleId);
             currentUser = user;
+            System.out.println("DEBUG: Account created successfully. Welcome, " + username);
             return user;
+        } catch (SQLException ex) {
+            System.err.println("DEBUG: Database error during registration: " + ex.getMessage());
+            throw new Exception("Database error: " + ex.getMessage());
+        }
+    }
+
+    private static Optional<User> getUserByEmail(String email) throws SQLException {
+        String sql = "SELECT * FROM users WHERE email = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, email);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRowToUser(rs));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static void linkGoogleAccount(String userId, String googleId) throws SQLException {
+        String sql = "UPDATE users SET google_id = ? WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, googleId);
+            pstmt.setString(2, userId);
+            pstmt.executeUpdate();
         }
     }
 }

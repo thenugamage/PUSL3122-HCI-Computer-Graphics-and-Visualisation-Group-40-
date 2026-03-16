@@ -7,9 +7,15 @@ public class Room {
     private double width;
     private double length;
     private double height;
-    private String wallColor;
-    private String floorColor;
+    private String wallColor = "#8e9196";
+    private String floorColor = "#6d573f";
     private List<FurnitureItem> furnitureItems = new ArrayList<>();
+    
+    // Lighting & Shading defaults from mockup
+    private int brightness = 50; 
+    private int lightX = 82;
+    private int lightY = -600;
+    private int lightZ = 0;
 
     // Getters and Setters
     public double getWidth() { return width; }
@@ -24,6 +30,15 @@ public class Room {
     public void setFloorColor(String floorColor) { this.floorColor = floorColor; }
     public List<FurnitureItem> getFurnitureItems() { return furnitureItems; }
     public void setFurnitureItems(List<FurnitureItem> furnitureItems) { this.furnitureItems = furnitureItems; }
+    
+    public int getBrightness() { return brightness; }
+    public void setBrightness(int brightness) { this.brightness = brightness; }
+    public int getLightX() { return lightX; }
+    public void setLightX(int lightX) { this.lightX = lightX; }
+    public int getLightY() { return lightY; }
+    public void setLightY(int lightY) { this.lightY = lightY; }
+    public int getLightZ() { return lightZ; }
+    public void setLightZ(int lightZ) { this.lightZ = lightZ; }
     
     public void addFurnitureItem(FurnitureItem item) {
         this.furnitureItems.add(item);

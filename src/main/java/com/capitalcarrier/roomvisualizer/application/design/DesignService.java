@@ -33,6 +33,25 @@ public class DesignService {
         }
     }
 
+    public static void deleteDesign(String id) throws SQLException {
+        String sql = "DELETE FROM design_projects WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, id);
+            pstmt.executeUpdate();
+        }
+    }
+
+    public static void updateDesignName(String id, String newName) throws SQLException {
+        String sql = "UPDATE design_projects SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newName);
+            pstmt.setString(2, id);
+            pstmt.executeUpdate();
+        }
+    }
+
     public static List<DesignProject> getUserDesigns() throws SQLException {
         User user = AuthService.getCurrentUser();
         if (user == null) return new ArrayList<>();
