@@ -67,7 +67,7 @@ public class DashboardFX {
         logoGroup.setAlignment(Pos.CENTER_LEFT);
         
         StackPane logoIcon = createLogoIcon();
-        Text logoText = new Text("Room Visualizer");
+        Text logoText = new Text("Lanka Furniture");
         logoText.setFont(Font.font("Inter", FontWeight.BOLD, 16));
         logoText.setFill(Color.WHITE);
         

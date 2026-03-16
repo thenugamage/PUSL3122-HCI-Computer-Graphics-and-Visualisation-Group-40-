@@ -206,7 +206,7 @@ public class SettingsViewFX extends VBox {
         footer.setAlignment(Pos.CENTER);
         footer.setPadding(new Insets(40, 0, 0, 0));
         
-        Text copy = new Text("Furniture Room Visualizer v1.2.0");
+        Text copy = new Text("Lanka Furniture v1.2.0");
         copy.setFont(Font.font("Inter", FontWeight.BOLD, 13));
         copy.setFill(ThemeConfig.TXT_SECONDARY);
         

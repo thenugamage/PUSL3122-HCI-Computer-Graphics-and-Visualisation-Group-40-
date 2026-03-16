@@ -185,7 +185,7 @@ public class AuthService {
         Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
         
         System.out.println("DEBUG: Authorized successfully. Fetching user info from Google APIs...");
-        Oauth2 oauth2 = new Oauth2.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName("Room Visualizer").build();
+        Oauth2 oauth2 = new Oauth2.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName("Lanka Furniture").build();
         Userinfo userinfo = oauth2.userinfo().get().execute();
         
         if (userinfo == null || userinfo.getId() == null) {
