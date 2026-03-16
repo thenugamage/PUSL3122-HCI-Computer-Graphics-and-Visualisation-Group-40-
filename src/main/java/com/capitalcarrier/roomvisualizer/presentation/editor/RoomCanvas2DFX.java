@@ -10,6 +10,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class RoomCanvas2DFX extends Pane {
     private Room room;
@@ -18,11 +19,13 @@ public class RoomCanvas2DFX extends Pane {
     private boolean snapToGrid = true;
 
     private FurnitureItem selectedItem = null;
+    private Consumer<FurnitureItem> onSelectionChanged;
     private double dragStartMouseX, dragStartMouseY;
     private double dragStartItemX, dragStartItemZ;
 
-    public RoomCanvas2DFX(Room room) {
+    public RoomCanvas2DFX(Room room, Consumer<FurnitureItem> onSelectionChanged) {
         this.room = room;
+        this.onSelectionChanged = onSelectionChanged;
         canvas = new Canvas(800, 600);
         getChildren().add(canvas);
 
@@ -35,17 +38,27 @@ public class RoomCanvas2DFX extends Pane {
         canvas.setOnMousePressed(e -> {
             double offX = (getWidth()  - room.getWidth()  * zoom) / 2.0;
             double offY = (getHeight() - room.getLength() * zoom) / 2.0;
+            FurnitureItem oldSelection = selectedItem;
             selectedItem = null;
             List<FurnitureItem> items = room.getFurnitureItems();
             if (items != null) {
                 for (int i = items.size() - 1; i >= 0; i--) {
                     FurnitureItem item = items.get(i);
-                    double fx = offX + item.getX() * zoom;
-                    double fz = offY + item.getZ() * zoom;
-                    double fw = item.getWidth() * zoom;
-                    double fd = item.getDepth() * zoom;
-                    if (e.getX() >= fx && e.getX() <= fx + fw &&
-                        e.getY() >= fz && e.getY() <= fz + fd) {
+                    double fw = item.getWidth()  * zoom;
+                    double fd = item.getDepth()  * zoom;
+                    double cx = offX + (item.getX() + item.getWidth()  / 2.0) * zoom;
+                    double cy = offY + (item.getZ() + item.getDepth()  / 2.0) * zoom;
+
+                    // Mouse relative to center
+                    double dx = e.getX() - cx;
+                    double dy = e.getY() - cy;
+
+                    // Rotate mouse back to local axes
+                    double rad = Math.toRadians(-item.getRotation());
+                    double rx = dx * Math.cos(rad) - dy * Math.sin(rad);
+                    double ry = dx * Math.sin(rad) + dy * Math.cos(rad);
+
+                    if (rx >= -fw/2.0 && rx <= fw/2.0 && ry >= -fd/2.0 && ry <= fd/2.0) {
                         selectedItem = item;
                         dragStartMouseX = e.getX();
                         dragStartMouseY = e.getY();
@@ -54,6 +67,10 @@ public class RoomCanvas2DFX extends Pane {
                         break;
                     }
                 }
+            }
+            
+            if (selectedItem != oldSelection && this.onSelectionChanged != null) {
+                this.onSelectionChanged.accept(selectedItem);
             }
             draw();
         });
@@ -95,6 +112,11 @@ public class RoomCanvas2DFX extends Pane {
     public double getZoom() { return zoom; }
 
     public void setSnapToGrid(boolean snap) { this.snapToGrid = snap; }
+
+    public void setSelectedItem(FurnitureItem item) {
+        this.selectedItem = item;
+        draw();
+    }
 
     public void draw() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -171,29 +193,33 @@ public class RoomCanvas2DFX extends Pane {
         List<FurnitureItem> items = room.getFurnitureItems();
         if (items != null) {
             for (FurnitureItem item : items) {
-                double fx = offX + item.getX() * zoom;
-                double fz = offY + item.getZ() * zoom;
-                double fw = item.getWidth() * zoom;
-                double fd = item.getDepth() * zoom;
+                double fw = item.getWidth()  * zoom;
+                double fd = item.getDepth()  * zoom;
+                double icx = offX + (item.getX() + item.getWidth()  / 2.0) * zoom;
+                double icy = offY + (item.getZ() + item.getDepth()  / 2.0) * zoom;
                 boolean sel = item == selectedItem;
+
+                gc.save();
+                gc.translate(icx, icy);
+                gc.rotate(item.getRotation());
 
                 // Drop shadow
                 gc.setFill(Color.web("#000000", 0.25));
-                gc.fillRoundRect(fx + 3, fz + 4, fw, fd, 7, 7);
+                gc.fillRoundRect(-fw/2.0 + 3, -fd/2.0 + 4, fw, fd, 7, 7);
 
                 // Body
                 String col = item.getColor();
                 gc.setFill(Color.web(col != null ? col : "#8B5CF6", sel ? 1.0 : 0.88));
-                gc.fillRoundRect(fx, fz, fw, fd, 7, 7);
+                gc.fillRoundRect(-fw/2.0, -fd/2.0, fw, fd, 7, 7);
 
                 // Highlight stripe at top
                 gc.setFill(Color.web("#FFFFFF", 0.12));
-                gc.fillRoundRect(fx, fz, fw, Math.min(fd * 0.3, 8), 7, 7);
+                gc.fillRoundRect(-fw/2.0, -fd/2.0, fw, Math.min(fd * 0.3, 8), 7, 7);
 
                 // Border
                 gc.setStroke(sel ? Color.web("#ca4bf6") : Color.web("#000000", 0.3));
                 gc.setLineWidth(sel ? 2.5 : 1);
-                gc.strokeRoundRect(fx, fz, fw, fd, 7, 7);
+                gc.strokeRoundRect(-fw/2.0, -fd/2.0, fw, fd, 7, 7);
 
                 // Name label
                 gc.setFill(Color.WHITE);
@@ -201,17 +227,19 @@ public class RoomCanvas2DFX extends Pane {
                 gc.setFont(Font.font("Inter", fontSize));
                 gc.setTextAlign(TextAlignment.CENTER);
                 String name = item.getName() != null ? item.getName() : "";
-                gc.fillText(name, fx + fw / 2.0, fz + fd / 2.0 + fontSize / 3.0, fw - 4);
+                gc.fillText(name, 0, fontSize / 3.0, fw - 4);
 
                 // Selection handles
                 if (sel) {
                     gc.setFill(Color.web("#ca4bf6"));
                     double r = 5;
-                    gc.fillOval(fx - r, fz - r, r * 2, r * 2);
-                    gc.fillOval(fx + fw - r, fz - r, r * 2, r * 2);
-                    gc.fillOval(fx - r, fz + fd - r, r * 2, r * 2);
-                    gc.fillOval(fx + fw - r, fz + fd - r, r * 2, r * 2);
+                    gc.fillOval(-fw/2.0 - r, -fd/2.0 - r, r * 2, r * 2);
+                    gc.fillOval( fw/2.0 - r, -fd/2.0 - r, r * 2, r * 2);
+                    gc.fillOval(-fw/2.0 - r,  fd/2.0 - r, r * 2, r * 2);
+                    gc.fillOval( fw/2.0 - r,  fd/2.0 - r, r * 2, r * 2);
                 }
+
+                gc.restore();
             }
         }
     }

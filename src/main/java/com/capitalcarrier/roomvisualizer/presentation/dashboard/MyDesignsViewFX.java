@@ -21,7 +21,6 @@ public class MyDesignsViewFX extends VBox {
 
     private static final String CARD_BG = "#0E1437";
     private static final String CARD_BORD = "#232D5A";
-    private static final String PURPLE = "#6C37DC";
 
     private List<DesignProject> allProjects = new ArrayList<>();
     private FlowPane gridPane;
@@ -57,6 +56,7 @@ public class MyDesignsViewFX extends VBox {
 
         Button createBtn = new Button("+ Create New Design");
         createBtn.setStyle("-fx-background-color: linear-gradient(to right, #6C37DC, #06B6D4); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14; -fx-background-radius: 12; -fx-padding: 10 20; -fx-cursor: hand;");
+        createBtn.setOnAction(e -> DashboardFX.getInstance().showEditor(new Room(), null));
         
         topRow.getChildren().addAll(titlePanel, spacer, createBtn);
 
@@ -78,12 +78,7 @@ public class MyDesignsViewFX extends VBox {
         filterCombo.setStyle("-fx-background-color: #191E37; -fx-text-fill: white; -fx-background-radius: 12; -fx-border-color: #232D5A; -fx-border-radius: 12;");
         filterCombo.setOnAction(e -> applyFilter());
 
-        Region controlSpacer = new Region();
-        HBox.setHgrow(controlSpacer, Priority.ALWAYS);
-
-        HBox viewSwitch = buildViewModeSwitcher();
-
-        controls.getChildren().addAll(searchField, filterCombo, controlSpacer, viewSwitch);
+        controls.getChildren().addAll(searchField, filterCombo);
 
         header.getChildren().addAll(topRow, controls);
         return header;
@@ -146,6 +141,7 @@ public class MyDesignsViewFX extends VBox {
         card.setPrefSize(350, 300);
         card.setStyle("-fx-background-color: " + CARD_BG + "; -fx-background-radius: 16; -fx-border-color: " + CARD_BORD + "; -fx-border-radius: 16;");
         card.setCursor(javafx.scene.Cursor.HAND);
+        card.setOnMouseClicked(e -> DashboardFX.getInstance().showEditor(project.getRoom(), project.getId()));
 
         // Preview Area (Simplified for now, just a placeholder color)
         StackPane preview = new StackPane();
@@ -171,6 +167,7 @@ public class MyDesignsViewFX extends VBox {
 
         HBox actions = new HBox(8);
         Button openBtn = createSmallButton("Open", "#6C37DC");
+        openBtn.setOnAction(e -> DashboardFX.getInstance().showEditor(project.getRoom(), project.getId()));
         Button deleteBtn = createSmallButton("Delete", "#50141E");
         actions.getChildren().addAll(openBtn, deleteBtn);
 
@@ -195,18 +192,5 @@ public class MyDesignsViewFX extends VBox {
         t.setFill(Color.WHITE);
         empty.getChildren().add(t);
         return empty;
-    }
-
-    private HBox buildViewModeSwitcher() {
-        HBox sw = new HBox(0);
-        sw.setPrefSize(80, 36);
-        sw.setStyle("-fx-background-color: #191E37; -fx-background-radius: 10; -fx-border-color: #232D5A; -fx-border-radius: 10;");
-        sw.setAlignment(Pos.CENTER);
-        
-        Button gridBtn = new Button(); gridBtn.setPrefSize(40, 36); gridBtn.setStyle("-fx-background-color: transparent;");
-        Button listBtn = new Button(); listBtn.setPrefSize(40, 36); listBtn.setStyle("-fx-background-color: transparent;");
-        
-        sw.getChildren().addAll(gridBtn, listBtn);
-        return sw;
     }
 }

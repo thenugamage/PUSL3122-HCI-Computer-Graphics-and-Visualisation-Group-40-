@@ -15,17 +15,19 @@ import java.util.UUID;
 public class DesignService {
     private static final Gson gson = new Gson();
 
-    public static void saveDesign(String name, Room room) throws SQLException {
+    public static void saveDesign(String id, String name, Room room) throws SQLException {
         User user = AuthService.getCurrentUser();
         if (user == null) throw new SQLException("User not logged in");
 
         String roomData = gson.toJson(room);
+        String finalId = (id == null || id.isEmpty()) ? UUID.randomUUID().toString() : id;
+        
         String sql = "INSERT INTO design_projects (id, user_id, name, room_data) VALUES (?, ?, ?, ?) " +
                      "ON CONFLICT(id) DO UPDATE SET name=excluded.name, room_data=excluded.room_data, updated_at=CURRENT_TIMESTAMP";
 
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, UUID.randomUUID().toString());
+            pstmt.setString(1, finalId);
             pstmt.setString(2, user.getId());
             pstmt.setString(3, name);
             pstmt.setString(4, roomData);

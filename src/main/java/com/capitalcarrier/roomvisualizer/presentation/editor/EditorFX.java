@@ -1,9 +1,7 @@
 package com.capitalcarrier.roomvisualizer.presentation.editor;
 
-import com.capitalcarrier.roomvisualizer.application.auth.AuthService;
 import com.capitalcarrier.roomvisualizer.domain.model.Room;
-import com.capitalcarrier.roomvisualizer.domain.model.User;
-import com.capitalcarrier.roomvisualizer.presentation.dashboard.DashboardFX;
+import com.capitalcarrier.roomvisualizer.domain.model.FurnitureItem;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -13,11 +11,8 @@ import javafx.scene.SubScene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class EditorFX {
@@ -37,26 +32,35 @@ public class EditorFX {
     private Node controls3DNode;
     private Node zoomBoxNode;
 
-    public EditorFX(Room room) {
+    public EditorFX(Room room, Stage stage) {
         this.room = room != null ? room : new Room();
         if (this.room.getWidth()  <= 0) this.room.setWidth(6);
         if (this.room.getLength() <= 0) this.room.setLength(8);
         if (this.room.getHeight() <= 0) this.room.setHeight(3);
+        
+        initializeUI(stage);
     }
 
-    public void start(Stage stage) {
+    public void setDesignId(String id) {
+        if (propertiesPanel != null) propertiesPanel.setDesignId(id);
+    }
+
+    private void initializeUI(Stage stage) {
         root = new BorderPane();
         root.setStyle("-fx-background-color: #050A1E;");
 
-        root.setTop(buildNavbar(stage));
+        // We don't build a navbar here if it's hosted in DashboardFX
+        // But for standalone start, it might need one. 
+        // We'll let DashboardFX handle the top part.
+        
         propertiesPanel = new PropertiesPanel(room, this::refreshViews, stage);
         root.setLeft(propertiesPanel);
+        
         catalogPanel = new CatalogPanel(room, this::refreshViews);
         root.setRight(catalogPanel);
 
-        // Center: bordered canvas wrapper
-        view3D = new RoomViewport3DFX(room);
-        view2D = new RoomCanvas2DFX(room);
+        view3D = new RoomViewport3DFX(room, item -> syncSelection(item, view3D));
+        view2D = new RoomCanvas2DFX(room, item -> syncSelection(item, view2D));
 
         subScene3D = new SubScene(view3D, 800, 600, true, SceneAntialiasing.BALANCED);
         subScene3D.setFill(Color.web("#050A1E"));
@@ -73,21 +77,37 @@ public class EditorFX {
         wire3DMouseControls();
         buildOverlay(centerStack);
 
-        // Wrap in a bordered container matching the reference UI
         BorderPane canvasWrap = new BorderPane(centerStack);
         canvasWrap.setStyle("-fx-border-color: #1e2d5a; -fx-border-width: 1; -fx-border-radius: 4; " +
                             "-fx-background-color: #050A1E; -fx-background-radius: 4;");
-        BorderPane.setMargin(centerStack, new Insets(0));
-
         root.setCenter(canvasWrap);
+    }
 
-        Scene scene = new Scene(root, 1440, 900);
+    private void syncSelection(FurnitureItem item, Object source) {
+        if (source != view3D && view3D != null) view3D.setSelectedItem(item);
+        if (source != view2D && view2D != null) view2D.setSelectedItem(item);
+        
+        if (catalogPanel != null) catalogPanel.setSelectedItem(item);
+        
+        if (statusLabel != null) {
+            statusLabel.setText(item != null ? item.getName() + " selected" : statusText());
+        }
+    }
+
+    public Node getContent() {
+        return root;
+    }
+
+    public void start(Stage stage) {
+        // Fallback for standalone boot
+        BorderPane topLevel = new BorderPane(root);
+        // topLevel.setTop(buildNavbar(stage)); // If needed
+        
+        Scene scene = new Scene(topLevel, 1440, 900);
         try {
             scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         } catch (Exception ignored) {}
-
         stage.setScene(scene);
-        stage.setTitle("Room Visualizer \u2013 " + room.getName());
         stage.show();
     }
 
@@ -128,16 +148,9 @@ public class EditorFX {
             if (totalDrag[0] < 5) {
                 javafx.scene.input.PickResult pick = e.getPickResult();
                 if (pick != null && pick.getIntersectedNode() != null) {
-                    com.capitalcarrier.roomvisualizer.domain.model.FurnitureItem sel =
-                        view3D.selectNode(pick.getIntersectedNode());
-                    if (statusLabel != null)
-                        statusLabel.setText(sel != null ? sel.getName() + " selected" : statusText());
-                    if (catalogPanel != null)
-                        catalogPanel.setSelectedItem(sel);
+                    view3D.selectNode(pick.getIntersectedNode());
                 } else {
                     view3D.clearSelection();
-                    if (statusLabel != null) statusLabel.setText(statusText());
-                    if (catalogPanel != null) catalogPanel.setSelectedItem(null);
                 }
             }
         });
@@ -147,82 +160,6 @@ public class EditorFX {
 
     // ─── Navbar ───────────────────────────────────────────────────────────────
 
-    private Node buildNavbar(Stage stage) {
-        HBox nav = new HBox(28);
-        nav.setPrefHeight(60);
-        nav.setAlignment(Pos.CENTER_LEFT);
-        nav.setPadding(new Insets(0, 24, 0, 24));
-        nav.setStyle("-fx-background-color: #0F1437; -fx-border-color: rgba(255,255,255,0.05); -fx-border-width: 0 0 1 0;");
-
-        HBox logoBox = new HBox(10);
-        logoBox.setAlignment(Pos.CENTER_LEFT);
-        SVGPath logoIcon = new SVGPath();
-        logoIcon.setContent("M12,2L4.5,20.29L5.21,21L12,18l6.79,3l0.71-0.71z");
-        logoIcon.setFill(Color.web("#8B5CF6"));
-        Text logoText = new Text("Room Visualizer");
-        logoText.setFill(Color.WHITE);
-        logoText.setFont(Font.font("Inter", FontWeight.BOLD, 17));
-        logoBox.getChildren().addAll(logoIcon, logoText);
-
-        HBox menu = new HBox(8);
-        menu.setAlignment(Pos.CENTER_LEFT);
-        menu.getChildren().addAll(
-            navItem("My Designs",  "M3,13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z", false, stage),
-            navItem("New Design",  "M19,13H13v6h-2v-6H5v-2h6V5h2v6h6V13z", true,  stage),
-            navItem("My Rooms",    "M10,20v-6h4v6h5v-8h3L12,3L2,12h3v8H10z",  false, stage),
-            navItem("Settings",
-                "M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z",
-                false, stage)
-        );
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        String username = "User";
-        try {
-            User u = AuthService.getCurrentUser();
-            if (u != null && u.getUsername() != null) username = u.getUsername();
-        } catch (Exception ignored) {}
-
-        HBox userBox = new HBox(10);
-        userBox.setAlignment(Pos.CENTER_LEFT);
-        userBox.setPadding(new Insets(5, 12, 5, 12));
-        userBox.setStyle("-fx-background-color: rgba(255,255,255,0.05); -fx-background-radius: 20;");
-        SVGPath userIcon = new SVGPath();
-        userIcon.setContent("M12,12c2.21,0,4-1.79,4-4s-1.79-4-4-4s-4,1.79-4,4S9.79,12,12,12z M12,14c-2.67,0-8,1.34-8,4v2h16v-2C20,15.34,14.67,14,12,14z");
-        userIcon.setFill(Color.web("#8C94AF")); userIcon.setScaleX(0.75); userIcon.setScaleY(0.75);
-        Label userLbl = new Label(username);
-        userLbl.setTextFill(Color.web("#8C94AF")); userLbl.setFont(Font.font("Inter", 12));
-        String init = username.isEmpty() ? "U" : String.valueOf(username.charAt(0)).toUpperCase();
-        Circle avCircle = new Circle(14, Color.web("#8B5CF6"));
-        Text avText = new Text(init);
-        avText.setFill(Color.WHITE); avText.setFont(Font.font("Inter", FontWeight.BOLD, 12));
-        StackPane avPane = new StackPane(avCircle, avText);
-        userBox.getChildren().addAll(userIcon, userLbl, avPane);
-
-        nav.getChildren().addAll(logoBox, menu, spacer, userBox);
-        return nav;
-    }
-
-    private Node navItem(String text, String svg, boolean active, Stage stage) {
-        HBox item = new HBox(8);
-        item.setAlignment(Pos.CENTER);
-        item.setPadding(new Insets(7, 12, 7, 12));
-        item.setCursor(javafx.scene.Cursor.HAND);
-        if (active) item.setStyle("-fx-background-color: rgba(139,92,246,0.15); -fx-background-radius: 8;");
-        SVGPath icon = new SVGPath();
-        icon.setContent(svg);
-        icon.setFill(active ? Color.web("#8B5CF6") : Color.web("#8C94AF"));
-        icon.setScaleX(0.65); icon.setScaleY(0.65);
-        Label lbl = new Label(text);
-        lbl.setTextFill(active ? Color.WHITE : Color.web("#8C94AF"));
-        lbl.setFont(Font.font("Inter", FontWeight.MEDIUM, 13));
-        item.getChildren().addAll(icon, lbl);
-        item.setOnMouseClicked(e -> {
-            if (text.equals("My Designs") || text.equals("My Rooms")) new DashboardFX().start(stage);
-        });
-        return item;
-    }
 
     // ─── Center overlay ───────────────────────────────────────────────────────
 

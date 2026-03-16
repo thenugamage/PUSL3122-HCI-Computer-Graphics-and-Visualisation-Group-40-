@@ -241,9 +241,26 @@ public class CatalogPanel extends VBox {
 
     private VBox createColorGroup(String labelText, String[] colors, String current, java.util.function.Consumer<String> onSelect) {
         VBox box = new VBox(8);
+        
+        HBox header = new HBox(10);
+        header.setAlignment(Pos.CENTER_LEFT);
+        
         Label label = new Label(labelText);
         label.setTextFill(Color.web("#8C94AF"));
         label.setFont(Font.font("Inter", 11));
+        
+        ColorPicker picker = new ColorPicker(Color.web(current));
+        picker.setStyle("-fx-background-color: #1d2440; -fx-background-radius: 6; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 6; -fx-color-label-visible: false;");
+        picker.setPrefWidth(40);
+        picker.setPrefHeight(24);
+        picker.setOnAction(e -> {
+            String hex = "#" + picker.getValue().toString().substring(2, 8).toUpperCase();
+            onSelect.accept(hex);
+            onRefresh.run();
+        });
+        
+        header.getChildren().addAll(label, picker);
+        box.getChildren().add(header);
 
         FlowPane swatches = new FlowPane(8, 8);
         for (String hex : colors) {
@@ -259,6 +276,8 @@ public class CatalogPanel extends VBox {
 
             rect.setOnMouseClicked(e -> {
                 onSelect.accept(hex);
+                picker.setValue(Color.web(hex));
+                onRefresh.run();
                 swatches.getChildren().forEach(n -> {
                     if (n instanceof Rectangle) {
                         ((Rectangle) n).setStroke(Color.TRANSPARENT);
@@ -269,7 +288,7 @@ public class CatalogPanel extends VBox {
             });
             swatches.getChildren().add(rect);
         }
-        box.getChildren().addAll(label, swatches);
+        box.getChildren().add(swatches);
         return box;
     }
 

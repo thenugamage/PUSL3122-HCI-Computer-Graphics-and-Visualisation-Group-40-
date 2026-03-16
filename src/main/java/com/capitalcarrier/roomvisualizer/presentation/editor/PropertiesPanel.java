@@ -17,9 +17,12 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class PropertiesPanel extends VBox {
+    private String designId;
     private Room room;
     private Runnable onRefresh;
     private Stage stage;
+
+    public void setDesignId(String id) { this.designId = id; }
 
     public PropertiesPanel(Room room, Runnable onRefresh, Stage stage) {
         this.room = room;
@@ -146,9 +149,26 @@ public class PropertiesPanel extends VBox {
                                    String current,
                                    java.util.function.Consumer<String> onSelect) {
         VBox box = new VBox(8);
+        
+        HBox header = new HBox(10);
+        header.setAlignment(Pos.CENTER_LEFT);
+        
         Label label = new Label(labelText);
         label.setTextFill(Color.web("#8C94AF"));
         label.setFont(Font.font("Inter", 11));
+        
+        ColorPicker picker = new ColorPicker(Color.web(current));
+        picker.setStyle("-fx-background-color: #1d2440; -fx-background-radius: 6; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 6; -fx-color-label-visible: false;");
+        picker.setPrefWidth(40);
+        picker.setPrefHeight(24);
+        picker.setOnAction(e -> {
+            String hex = "#" + picker.getValue().toString().substring(2, 8).toUpperCase();
+            onSelect.accept(hex);
+            onRefresh.run();
+        });
+        
+        header.getChildren().addAll(label, picker);
+        box.getChildren().add(header);
 
         HBox swatches = new HBox(8);
         for (String hex : colors) {
@@ -156,6 +176,7 @@ public class PropertiesPanel extends VBox {
             try { rect.setFill(Color.web(hex)); } catch (Exception ignored) {}
             rect.setArcWidth(4);
             rect.setArcHeight(4);
+            rect.setCursor(javafx.scene.Cursor.HAND);
             rect.getStyleClass().add("color-swatch");
 
             if (hex.equalsIgnoreCase(current)) {
@@ -165,6 +186,7 @@ public class PropertiesPanel extends VBox {
 
             rect.setOnMouseClicked(e -> {
                 onSelect.accept(hex);
+                picker.setValue(Color.web(hex));
                 onRefresh.run();
                 swatches.getChildren().forEach(n -> {
                     if (n instanceof Rectangle) {
@@ -178,7 +200,7 @@ public class PropertiesPanel extends VBox {
             swatches.getChildren().add(rect);
         }
 
-        box.getChildren().addAll(label, swatches);
+        box.getChildren().add(swatches);
         return box;
     }
 
@@ -217,47 +239,62 @@ public class PropertiesPanel extends VBox {
 
     private VBox buildActionButtons() {
         VBox box = new VBox(12);
+        box.setPadding(new Insets(10, 0, 0, 0));
 
-        Button saveBtn = new Button("       Save Design");
-        // Using a manual HBox or StackPane to match the mockup's icon positioning
-        HBox saveContent = new HBox(8);
+        // Save Design Button
+        Button saveBtn = new Button();
+        HBox saveContent = new HBox(10);
         saveContent.setAlignment(Pos.CENTER);
+        
         SVGPath saveIcon = new SVGPath();
-        saveIcon.setContent("M4,15V19H8L18.5,8.5L14.5,4.5L4,15M23,5.5L19.5,2L17.5,4L21,7.5L23,5.5Z"); // A pen/edit icon or similar
+        saveIcon.setContent("M4,15V19H8L18.5,8.5L14.5,4.5L4,15M23,5.5L19.5,2L17.5,4L21,7.5L23,5.5Z");
         saveIcon.setFill(Color.WHITE);
-        saveIcon.setScaleX(0.8);
-        saveIcon.setScaleY(0.8);
+        saveIcon.setScaleX(0.85);
+        saveIcon.setScaleY(0.85);
         
         Label saveLabel = new Label("Save Design");
         saveLabel.setTextFill(Color.WHITE);
-        saveLabel.setStyle("-fx-font-weight: bold;");
+        saveLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
         
-        saveBtn.setGraphic(new HBox(10, saveIcon, saveLabel));
-        saveBtn.setAlignment(Pos.CENTER);
+        saveContent.getChildren().addAll(saveIcon, saveLabel);
+        saveBtn.setGraphic(saveContent);
         
         saveBtn.setMaxWidth(Double.MAX_VALUE);
-        saveBtn.setPrefHeight(48);
-        saveBtn.setStyle(
+        saveBtn.setPrefHeight(50);
+        String saveBaseStyle = 
             "-fx-background-color: linear-gradient(to right, #B24EF1, #8B5CF6); " +
-            "-fx-text-fill: white; -fx-background-radius: 12; -fx-cursor: hand;"
-        );
+            "-fx-background-radius: 12; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.3), 10, 0, 0, 4);";
+        String saveHoverStyle = 
+            "-fx-background-color: linear-gradient(to right, #C066FF, #9D7CFF); " +
+            "-fx-background-radius: 12; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.5), 15, 0, 0, 6);";
+            
+        saveBtn.setStyle(saveBaseStyle);
+        saveBtn.setOnMouseEntered(e -> saveBtn.setStyle(saveHoverStyle));
+        saveBtn.setOnMouseExited(e -> saveBtn.setStyle(saveBaseStyle));
+        
         saveBtn.setOnAction(e -> {
             try {
-                DesignService.saveDesign(room.getName() != null ? room.getName() : "My Design", room);
-                showInfo("Saved", "Design \"" + room.getName() + "\" saved successfully!");
+                DesignService.saveDesign(designId, room.getName() != null ? room.getName() : "My Design", room);
+                showInfo("Saved", "Design \"" + (room.getName() != null ? room.getName() : "My Design") + "\" saved successfully!");
             } catch (Exception ex) {
                 showError("Save Error", ex.getMessage());
             }
         });
 
+        // Back to Designs Button
         Button backBtn = new Button("Back to Designs");
         backBtn.setMaxWidth(Double.MAX_VALUE);
-        backBtn.setPrefHeight(48);
-        backBtn.setStyle(
-            "-fx-background-color: transparent; -fx-text-fill: white; -fx-font-weight: bold; " +
-            "-fx-background-radius: 12; -fx-border-color: rgba(255,255,255,0.15); " +
-            "-fx-border-radius: 12; -fx-cursor: hand;"
-        );
+        backBtn.setPrefHeight(50);
+        String backBaseStyle = 
+            "-fx-background-color: transparent; -fx-text-fill: #8C94AF; -fx-font-weight: bold; " +
+            "-fx-background-radius: 12; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 12; -fx-cursor: hand;";
+        String backHoverStyle = 
+            "-fx-background-color: rgba(255,255,255,0.05); -fx-text-fill: white; -fx-font-weight: bold; " +
+            "-fx-background-radius: 12; -fx-border-color: rgba(255,255,255,0.2); -fx-border-radius: 12; -fx-cursor: hand;";
+            
+        backBtn.setStyle(backBaseStyle);
+        backBtn.setOnMouseEntered(e -> backBtn.setStyle(backHoverStyle));
+        backBtn.setOnMouseExited(e -> backBtn.setStyle(backBaseStyle));
         backBtn.setOnAction(e -> new DashboardFX().start(stage));
 
         box.getChildren().addAll(saveBtn, backBtn);

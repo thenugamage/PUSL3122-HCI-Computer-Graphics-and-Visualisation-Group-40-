@@ -55,11 +55,13 @@ public class RoomViewport3DFX extends Group {
     private final Map<Group, FurnitureItem> furnitureMap = new HashMap<>();
     private Group selectedGroup = null;
     private FurnitureItem selectedData;
+    private java.util.function.Consumer<FurnitureItem> onSelectionChanged;
 
     // ── Constructor ────────────────────────────────────────────────────────────
 
-    public RoomViewport3DFX(Room room) {
+    public RoomViewport3DFX(Room room, java.util.function.Consumer<FurnitureItem> onSelectionChanged) {
         this.room = room;
+        this.onSelectionChanged = onSelectionChanged;
         roomGroup = new Group();
 
         double w = room.getWidth();
@@ -321,6 +323,14 @@ public class RoomViewport3DFX extends Group {
         }
 
         setupFurnitureDragging(fg, item);
+        
+        fg.setOnMouseClicked(e -> {
+            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+                selectNode(fg);
+                e.consume();
+            }
+        });
+
         furnitureMap.put(fg, item);
         roomGroup.getChildren().add(fg);
     }
@@ -610,26 +620,53 @@ public class RoomViewport3DFX extends Group {
 
     private Group buildWardrobe(double w, double h, double d, Color c) {
         Group g = new Group();
+        double wallT = 0.03;
+        double baseH = 0.08;
         Color dark = c.darker();
+        Color frame = dark.darker();
 
-        place(g, w, h, d, c, 0, 0, 0);
-        // Centre door divider on front face
-        place(g, 0.025, h * 0.92, 0.025, dark, 0, 0, -d/2 + 0.025);
-        // Handles
-        placeWithMat(g, 0.03, 0.15, 0.03, silverMat(), -w * 0.15, 0, -d/2 + 0.02);
-        placeWithMat(g, 0.03, 0.15, 0.03, silverMat(),  w * 0.15, 0, -d/2 + 0.02);
+        // Base pedestal
+        place(g, w * 0.96, baseH, d * 0.96, frame, 0, h/2 - baseH/2, 0);
+        
+        // Main carcass
+        place(g, w, h - baseH, d, c, 0, -baseH/2, 0);
+        
+        // Two door panels (inset slightly)
+        double doorW = (w - wallT * 3) / 2;
+        double doorH = h - baseH - wallT * 2;
+        place(g, doorW, doorH, 0.015, dark, -doorW/2 - wallT/2, -baseH/2, -d/2 + 0.01);
+        place(g, doorW, doorH, 0.015, dark,  doorW/2 + wallT/2, -baseH/2, -d/2 + 0.01);
+        
+        // Vertical Handles
+        placeWithMat(g, 0.02, h * 0.25, 0.03, silverMat(), -0.05, -baseH/2, -d/2 - 0.01);
+        placeWithMat(g, 0.02, h * 0.25, 0.03, silverMat(),  0.05, -baseH/2, -d/2 - 0.01);
+        
         return g;
     }
 
     private Group buildCabinet(double w, double h, double d, Color c) {
         Group g = new Group();
+        double topT = 0.04;
+        double baseH = 0.06;
         Color dark = c.darker();
-
-        place(g, w, h, d, c, 0, 0, 0);
-        // Horizontal groove on front
-        place(g, w * 0.95, 0.025, 0.025, dark, 0, 0, -d/2 + 0.015);
-        // Handle
-        placeWithMat(g, w * 0.28, 0.025, 0.025, silverMat(), 0, h * 0.22, -d/2 + 0.02);
+        
+        // Overhanging top
+        place(g, w + 0.04, topT, d + 0.04, c.brighter(), 0, -h/2 + topT/2, 0);
+        
+        // Body
+        place(g, w, h - topT - baseH, d, c, 0, (topT - baseH)/2, 0);
+        
+        // Base
+        place(g, w * 0.92, baseH, d * 0.92, dark.darker(), 0, h/2 - baseH/2, 0);
+        
+        // Drawer dividers (horizontal grooves)
+        place(g, w * 0.95, 0.01, 0.02, dark, 0, -0.05, -d/2 + 0.01);
+        place(g, w * 0.95, 0.01, 0.02, dark, 0,  0.15, -d/2 + 0.01);
+        
+        // Handles
+        placeWithMat(g, 0.15, 0.02, 0.02, silverMat(), 0, -0.15, -d/2 - 0.01);
+        placeWithMat(g, 0.15, 0.02, 0.02, silverMat(), 0,  0.05, -d/2 - 0.01);
+        
         return g;
     }
 
@@ -701,32 +738,48 @@ public class RoomViewport3DFX extends Group {
 
     private Group buildFloorLamp(double w, double h, double d, Color c) {
         Group g = new Group();
-        double baseH  = 0.06;
-        double poleW  = 0.04;
-        double shadeH = h * 0.18;
+        double baseH  = 0.05;
+        double poleW  = 0.03;
+        double shadeH = h * 0.22;
         double poleH  = h - baseH - shadeH;
-
-        placeWithMat(g, w, baseH, d, metalMat(),
-                     0, h/2 - baseH/2, 0);
-        placeWithMat(g, poleW, poleH, poleW, metalMat(),
-                     0, h/2 - baseH - poleH/2, 0);
-        // Shade — warm cream
-        place(g, w * 1.15, shadeH, d * 1.15, Color.web("#FFF5DD"),
-              0, -h/2 + shadeH/2, 0, 12);
+        
+        // Base
+        placeWithMat(g, w, baseH, d, metalMat(), 0, h/2 - baseH/2, 0);
+        
+        // Slim vertical pole
+        placeWithMat(g, poleW, poleH, poleW, metalMat(), 0, h/2 - baseH - poleH/2, 0);
+        
+        // Shade with glow
+        Color shadeColor = Color.web("#FFF9E5");
+        place(g, w * 1.2, shadeH, d * 1.2, shadeColor, 0, -h/2 + shadeH/2, 0, 15);
+        
+        // Internal glow sphere (bulb)
+        javafx.scene.shape.Sphere bulb = new javafx.scene.shape.Sphere(0.04);
+        PhongMaterial bulbMat = new PhongMaterial(Color.WHITE);
+        bulbMat.setSelfIlluminationMap(null); // High specular 
+        bulbMat.setDiffuseColor(Color.WHITE);
+        bulb.setMaterial(bulbMat);
+        bulb.setTranslateY(-h/2 + shadeH/2);
+        g.getChildren().add(bulb);
+        
         return g;
     }
 
     private Group buildTableLamp(double w, double h, double d, Color c) {
         Group g = new Group();
-        double baseH  = h * 0.25;
-        double shadeH = h * 0.45;
+        double baseH  = h * 0.20;
+        double shadeH = h * 0.50;
         double poleH  = h - baseH - shadeH;
 
-        placeWithMat(g, w, baseH, d, metalMat(), 0, h/2 - baseH/2, 0);
-        placeWithMat(g, 0.03, poleH, 0.03, metalMat(),
-                     0, -h/2 + shadeH + poleH/2, 0);
-        place(g, w * 1.25, shadeH, d * 1.25, Color.web("#FFF5DD"),
-              0, -h/2 + shadeH/2, 0, 12);
+        // Base
+        placeWithMat(g, w * 0.8, baseH, d * 0.8, silverMat(), 0, h/2 - baseH/2, 0);
+        
+        // Supporting neck
+        placeWithMat(g, 0.02, poleH, 0.02, silverMat(), 0, -h/2 + shadeH + poleH/2, 0);
+        
+        // Shade
+        place(g, w * 1.3, shadeH, d * 1.3, Color.web("#FFF9E5"), 0, -h/2 + shadeH/2, 0, 20);
+        
         return g;
     }
 
@@ -765,15 +818,22 @@ public class RoomViewport3DFX extends Group {
 
     private Group buildMirror(double w, double h, double d, Color c) {
         Group g = new Group();
-        double fT   = Math.min(0.05, w * 0.08);
-        Color frame = Color.web("#8B7355");
-
-        place(g, w, h, d, frame, 0, 0, 0);
-        // Reflective glass surface inset from frame
-        PhongMaterial glass = new PhongMaterial(Color.rgb(200, 225, 240, 0.9));
-        glass.setSpecularColor(Color.WHITE);
-        glass.setSpecularPower(120);
-        placeWithMat(g, w - fT*2, h - fT*2, d * 0.45, glass, 0, 0, -d * 0.35);
+        double fT = 0.05;
+        Color frameColor = Color.web("#BFAA8A"); // Champagne gold/silver frame
+        
+        // Outer frame (beveled look)
+        place(g, w, h, d, frameColor.darker(), 0, 0, 0, 60);
+        
+        // Inner reflective surface
+        PhongMaterial mirrorMat = new PhongMaterial(Color.rgb(220, 235, 250, 0.8));
+        mirrorMat.setSpecularColor(Color.WHITE);
+        mirrorMat.setSpecularPower(128);
+        placeWithMat(g, w - fT*2, h - fT*2, d * 0.5, mirrorMat, 0, 0, -d/2 + d*0.2);
+        
+        // Subtle detail on frame corners
+        place(g, fT, fT, d + 0.01, frameColor.brighter(), -w/2 + fT/2, -h/2 + fT/2, 0);
+        place(g, fT, fT, d + 0.01, frameColor.brighter(),  w/2 - fT/2, -h/2 + fT/2, 0);
+        
         return g;
     }
 
@@ -826,13 +886,41 @@ public class RoomViewport3DFX extends Group {
         if (selectedGroup != null) {
             applyHighlight(selectedGroup, true);
         }
+
+        if (onSelectionChanged != null) {
+            onSelectionChanged.accept(selectedData);
+        }
         return selectedData;
+    }
+
+    public void setSelectedItem(FurnitureItem item) {
+        if (selectedGroup != null) applyHighlight(selectedGroup, false);
+        
+        selectedData = item;
+        selectedGroup = null;
+        
+        if (item != null) {
+            for (Map.Entry<Group, FurnitureItem> entry : furnitureMap.entrySet()) {
+                if (entry.getValue() == item) {
+                    selectedGroup = entry.getKey();
+                    applyHighlight(selectedGroup, true);
+                    break;
+                }
+            }
+        }
+        
+        if (onSelectionChanged != null) {
+            onSelectionChanged.accept(selectedData);
+        }
     }
 
     public void clearSelection() {
         if (selectedGroup != null) applyHighlight(selectedGroup, false);
         selectedGroup = null;
         selectedData = null;
+        if (onSelectionChanged != null) {
+            onSelectionChanged.accept(null);
+        }
     }
 
     private void applyHighlight(Group fg, boolean on) {
