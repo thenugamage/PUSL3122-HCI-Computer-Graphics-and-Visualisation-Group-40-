@@ -77,11 +77,6 @@ public class RegisterFX {
         cardSubHeader.setFont(Font.font("Inter", 15));
         cardSubHeader.setFill(Color.web("#64748b"));
 
-        // Inputs
-        VBox fullNameBox = createInputWithIcon("Full Name", "Enter your name", 
-            "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8", false);
-        TextField fullNameField = (TextField) ((StackPane) fullNameBox.getChildren().get(1)).getChildren().get(0);
-
         VBox emailBox = createInputWithIcon("Email Address", "Enter your email", 
             "M3 8L10.89 13.26C11.57 13.71 12.43 13.71 13.11 13.26L21 8M5 19H19C20.1 19 21 18.1 21 17V7C21 5.9 20.1 5 19 5H5C3.9 5 3 5.9 3 7V17C3 18.1 3.9 19 5 19Z", false);
         TextField emailField = (TextField) ((StackPane) emailBox.getChildren().get(1)).getChildren().get(0);
@@ -103,7 +98,7 @@ public class RegisterFX {
         registerBtn.setOnAction(e -> {
             try {
                 AuthService.registerLocalUser(
-                    fullNameField.getText(),
+                    usernameField.getText(),
                     usernameField.getText(),
                     emailField.getText(),
                     passwordField.getText()
@@ -150,7 +145,7 @@ public class RegisterFX {
         });
         bottomBox.getChildren().addAll(hasAccountText, loginLink);
 
-        card.getChildren().addAll(cardHeader, cardSubHeader, fullNameBox, emailBox, usernameBox, passwordBox, registerBtn, divider, googleBtn, bottomBox);
+        card.getChildren().addAll(cardHeader, cardSubHeader, usernameBox, emailBox, passwordBox, registerBtn, divider, googleBtn, bottomBox);
         
         contentWrapper.getChildren().addAll(titleBox, card);
         root.getChildren().add(contentWrapper);
