@@ -205,6 +205,20 @@ public class CatalogPanel extends VBox {
         rotBox.getChildren().addAll(rotLabel, rotSlider);
         propertiesView.getChildren().add(rotBox);
 
+        // Scale
+        VBox scaleBox = new VBox(8);
+        Label scaleLabel = new Label("Scale: " + String.format("%.2fx", selectedItem.getScale()));
+        scaleLabel.setTextFill(Color.web("#8C94AF"));
+        scaleLabel.setFont(Font.font("Inter", 11));
+        Slider scaleSlider = new Slider(0.5, 3.0, selectedItem.getScale());
+        scaleSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            selectedItem.setScale(newVal.doubleValue());
+            scaleLabel.setText("Scale: " + String.format("%.2fx", newVal.doubleValue()));
+            onRefresh.run();
+        });
+        scaleBox.getChildren().addAll(scaleLabel, scaleSlider);
+        propertiesView.getChildren().add(scaleBox);
+
         // Color group
         propertiesView.getChildren().add(createColorGroup(
             "Item Color",
@@ -216,20 +230,15 @@ public class CatalogPanel extends VBox {
         ));
         
         // Dimensions Display
-        propertiesView.getChildren().add(createDimensionField("Width (x)", selectedItem.getWidth(), v -> {
-            selectedItem.setWidth(v);
-            onRefresh.run();
-        }));
-        
-        propertiesView.getChildren().add(createDimensionField("Depth (z)", selectedItem.getDepth(), v -> {
-            selectedItem.setDepth(v);
-            onRefresh.run();
-        }));
-        
-        propertiesView.getChildren().add(createDimensionField("Height (y)", selectedItem.getHeight(), v -> {
-            selectedItem.setHeight(v);
-            onRefresh.run();
-        }));
+        VBox dimBox = new VBox(8);
+        Label dimLabel = new Label("Dimensions");
+        dimLabel.setTextFill(Color.web("#8C94AF"));
+        dimLabel.setFont(Font.font("Inter", 11));
+        Label valLabel = new Label(selectedItem.getWidth() + "m \u00d7 " + selectedItem.getDepth() + "m \u00d7 " + selectedItem.getHeight() + "m");
+        valLabel.setTextFill(Color.WHITE);
+        valLabel.setFont(Font.font("Inter", 13));
+        dimBox.getChildren().addAll(dimLabel, valLabel);
+        propertiesView.getChildren().add(dimBox);
 
         // Action Buttons
         Button deleteBtn = new Button("\ud83d\uddd1  Remove Item");
@@ -242,30 +251,6 @@ public class CatalogPanel extends VBox {
             onRefresh.run();
         });
         propertiesView.getChildren().add(deleteBtn);
-    }
-
-    private VBox createDimensionField(String labelText, double value, java.util.function.Consumer<Double> onAction) {
-        VBox box = new VBox(5);
-        Label label = new Label(labelText);
-        label.setTextFill(Color.web("#8C94AF"));
-        label.setFont(Font.font("Inter", 11));
-
-        TextField field = new TextField(String.format("%.2f", value));
-        field.setStyle(
-            "-fx-background-color: #1d2440; -fx-text-fill: white; -fx-background-radius: 8; " +
-            "-fx-border-radius: 8; -fx-border-color: rgba(255,255,255,0.05); -fx-padding: 8 12;"
-        );
-        field.textProperty().addListener((obs, oldVal, newVal) -> {
-            try {
-                double parsed = Double.parseDouble(newVal);
-                if (parsed > 0) {
-                    onAction.accept(parsed);
-                }
-            } catch (NumberFormatException ignored) {}
-        });
-
-        box.getChildren().addAll(label, field);
-        return box;
     }
 
     private VBox createColorGroup(String labelText, String[] colors, String current, java.util.function.Consumer<String> onSelect) {

@@ -44,10 +44,11 @@ public class RoomCanvas2DFX extends Pane {
             if (items != null) {
                 for (int i = items.size() - 1; i >= 0; i--) {
                     FurnitureItem item = items.get(i);
-                    double fw = item.getWidth()  * zoom;
-                    double fd = item.getDepth()  * zoom;
-                    double cx = offX + (item.getX() + item.getWidth()  / 2.0) * zoom;
-                    double cy = offY + (item.getZ() + item.getDepth()  / 2.0) * zoom;
+                    double scale = item.getScale();
+                    double fw = item.getWidth()  * zoom * scale;
+                    double fd = item.getDepth()  * zoom * scale;
+                    double cx = offX + (item.getX() + (item.getWidth() * scale) / 2.0) * zoom;
+                    double cy = offY + (item.getZ() + (item.getDepth() * scale) / 2.0) * zoom;
 
                     // Mouse relative to center
                     double dx = e.getX() - cx;
@@ -82,8 +83,9 @@ public class RoomCanvas2DFX extends Pane {
                 double newX = dragStartItemX + dx;
                 double newZ = dragStartItemZ + dz;
 
-                newX = Math.max(0, Math.min(room.getWidth()  - selectedItem.getWidth(),  newX));
-                newZ = Math.max(0, Math.min(room.getLength() - selectedItem.getDepth(), newZ));
+                double scale = selectedItem.getScale();
+                newX = Math.max(0, Math.min(room.getWidth()  - selectedItem.getWidth() * scale,  newX));
+                newZ = Math.max(0, Math.min(room.getLength() - selectedItem.getDepth() * scale, newZ));
 
                 if (snapToGrid) {
                     newX = Math.round(newX * 2.0) / 2.0;
@@ -193,10 +195,11 @@ public class RoomCanvas2DFX extends Pane {
         List<FurnitureItem> items = room.getFurnitureItems();
         if (items != null) {
             for (FurnitureItem item : items) {
-                double fw = item.getWidth()  * zoom;
-                double fd = item.getDepth()  * zoom;
-                double icx = offX + (item.getX() + item.getWidth()  / 2.0) * zoom;
-                double icy = offY + (item.getZ() + item.getDepth()  / 2.0) * zoom;
+                double scale = item.getScale();
+                double fw = item.getWidth()  * zoom * scale;
+                double fd = item.getDepth()  * zoom * scale;
+                double icx = offX + (item.getX() + (item.getWidth() * scale) / 2.0) * zoom;
+                double icy = offY + (item.getZ() + (item.getDepth() * scale) / 2.0) * zoom;
                 boolean sel = item == selectedItem;
 
                 gc.save();

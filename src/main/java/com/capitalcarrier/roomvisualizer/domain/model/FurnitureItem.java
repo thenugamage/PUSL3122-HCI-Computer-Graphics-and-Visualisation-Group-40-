@@ -8,6 +8,7 @@ public class FurnitureItem {
     private double rotation;
     private double width, height, depth;
     private String color;
+    private double scale = 1.0;
 
     // Getters and Setters
     public String getId() { return id; }
@@ -32,4 +33,6 @@ public class FurnitureItem {
     public void setDepth(double depth) { this.depth = depth; }
     public String getColor() { return color; }
     public void setColor(String color) { this.color = color; }
+    public double getScale() { return scale <= 0 ? 1.0 : scale; }
+    public void setScale(double scale) { this.scale = scale; }
 }

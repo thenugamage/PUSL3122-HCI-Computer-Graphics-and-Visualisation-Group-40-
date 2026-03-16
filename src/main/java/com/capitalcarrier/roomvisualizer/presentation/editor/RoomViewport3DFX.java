@@ -304,12 +304,15 @@ public class RoomViewport3DFX extends Group {
         double roomH = room.getHeight();
         Group fg = buildFurnitureGroup(item);
 
-        fg.setTranslateX(item.getX() + item.getWidth()  / 2.0);
-        fg.setTranslateY(roomH - item.getHeight() / 2.0 - item.getY());
-        fg.setTranslateZ(item.getZ() + item.getDepth()  / 2.0);
+        double scale = item.getScale();
+        fg.setTranslateX(item.getX() + (item.getWidth() * scale) / 2.0);
+        fg.setTranslateY(roomH - (item.getHeight() * scale) / 2.0 - item.getY());
+        fg.setTranslateZ(item.getZ() + (item.getDepth() * scale) / 2.0);
 
         if (item.getRotation() != 0)
             fg.getTransforms().add(new Rotate(item.getRotation(), Rotate.Y_AXIS));
+        if (scale != 1.0)
+            fg.getTransforms().add(new javafx.scene.transform.Scale(scale, scale, scale));
 
         // Apply item's custom color to its boxes
         for (Node node : fg.getChildren()) {
@@ -347,13 +350,16 @@ public class RoomViewport3DFX extends Group {
         if (fg == null) return;
 
         double roomH = room.getHeight();
-        fg.setTranslateX(item.getX() + item.getWidth()  / 2.0);
-        fg.setTranslateY(roomH - item.getHeight() / 2.0 - item.getY());
-        fg.setTranslateZ(item.getZ() + item.getDepth()  / 2.0);
+        double scale = item.getScale();
+        fg.setTranslateX(item.getX() + (item.getWidth() * scale) / 2.0);
+        fg.setTranslateY(roomH - (item.getHeight() * scale) / 2.0 - item.getY());
+        fg.setTranslateZ(item.getZ() + (item.getDepth() * scale) / 2.0);
 
-        fg.getTransforms().removeIf(t -> t instanceof Rotate);
+        fg.getTransforms().removeIf(t -> t instanceof Rotate || t instanceof javafx.scene.transform.Scale);
         if (item.getRotation() != 0)
             fg.getTransforms().add(new Rotate(item.getRotation(), Rotate.Y_AXIS));
+        if (scale != 1.0)
+            fg.getTransforms().add(new javafx.scene.transform.Scale(scale, scale, scale));
 
         // Update colors
         for (Node node : fg.getChildren()) {
@@ -389,15 +395,15 @@ public class RoomViewport3DFX extends Group {
                 double newX = item.getX() + dx * moveScale;
                 double newZ = item.getZ() - dy * moveScale;
 
-                // Clamp to room bounds
-                double limitX = room.getWidth() - item.getWidth();
-                double limitZ = room.getLength() - item.getDepth();
+                double scale = item.getScale();
+                double limitX = room.getWidth() - item.getWidth() * scale;
+                double limitZ = room.getLength() - item.getDepth() * scale;
                 item.setX(Math.max(0, Math.min(limitX, newX)));
                 item.setZ(Math.max(0, Math.min(limitZ, newZ)));
 
                 // Apply transform
-                fg.setTranslateX(item.getX() + item.getWidth()  / 2.0);
-                fg.setTranslateZ(item.getZ() + item.getDepth()  / 2.0);
+                fg.setTranslateX(item.getX() + (item.getWidth() * scale) / 2.0);
+                fg.setTranslateZ(item.getZ() + (item.getDepth() * scale) / 2.0);
 
                 startPos[0] = e.getSceneX();
                 startPos[1] = e.getSceneY();
