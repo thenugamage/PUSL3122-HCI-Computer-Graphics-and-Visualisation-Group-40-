@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Room {
+    private String name = "New Design";
     private double width;
     private double length;
     private double height;
@@ -18,6 +19,8 @@ public class Room {
     private int lightZ = 0;
 
     // Getters and Setters
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
     public double getWidth() { return width; }
     public void setWidth(double width) { this.width = width; }
     public double getLength() { return length; }

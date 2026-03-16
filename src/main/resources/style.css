@@ -1,43 +1,121 @@
 .root {
-    /* Brand Colors */
-    -fx-brand-purple: #8B5CF6;
-    -fx-brand-navy: #091C61;
-    
-    /* Functional Colors */
-    -fx-accent-glow: rgba(139, 92, 246, 0.4); /* Glow based on purple */
-    -fx-input-bg: #f8fafc;
-    -fx-border-color: #f1f5f9;
+    /* Mockup Colors */
+    -fx-bg-dark: #050A1E;
+    -fx-panel-bg: #0F1437;
+    -fx-input-bg: #141932;
+    -fx-accent-purple: #8B5CF6;
+    -fx-accent-blue: #3B82F6;
+    -fx-accent-cyan: #06B6D4;
+    -fx-text-primary: #FFFFFF;
+    -fx-text-secondary: #8C94AF;
+    -fx-border-color-dim: rgba(255, 255, 255, 0.05);
 }
 
 .title-text {
-    -fx-font-family: "Georgia";
+    -fx-font-family: "Inter", sans-serif;
     -fx-font-weight: bold;
-    -fx-fill: white;
+    -fx-fill: -fx-text-primary;
 }
 
 .sub-title-text {
-    -fx-font-family: "Inter";
-    -fx-fill: rgba(255, 255, 255, 0.9);
+    -fx-font-family: "Inter", sans-serif;
+    -fx-fill: -fx-text-secondary;
 }
 
-.auth-card {
-    -fx-background-color: white;
-    -fx-background-radius: 28;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 30, 0, 0, 15);
-}
-
+/* Premium Buttons */
 .primary-button {
-    -fx-background-color: linear-gradient(to right, -fx-brand-purple, #a855f7);
+    -fx-background-color: linear-gradient(to right, #ca4bf6, #844cf5);
     -fx-text-fill: white;
     -fx-font-weight: bold;
-    -fx-background-radius: 14;
+    -fx-background-radius: 12;
     -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(132, 76, 245, 0.3), 10, 0, 0, 0);
 }
 
 .secondary-button {
-    -fx-background-color: transparent;
-    -fx-border-color: #e2e8f0;
-    -fx-border-radius: 14;
-    -fx-background-radius: 14;
+    -fx-background-color: #1d2440;
+    -fx-text-fill: white;
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 12;
     -fx-cursor: hand;
+    -fx-font-weight: bold;
+}
+
+/* Auth Card */
+.auth-card {
+    -fx-background-color: white;
+    -fx-background-radius: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.18), 32, 0, 0, 10);
+}
+
+/* Inputs (editor/dashboard only — auth inputs use inline styles) */
+.editor-input.text-field, .editor-input.password-field {
+    -fx-background-color: #1d2440;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-padding: 8 12;
+}
+
+.editor-input.text-field:focused, .editor-input.password-field:focused {
+    -fx-border-color: -fx-accent-purple;
+}
+
+/* Sidebar Specific Styles */
+.sidebar-slider .track {
+    -fx-background-color: #2D3450;
+    -fx-pref-height: 4;
+}
+
+.sidebar-slider .thumb {
+    -fx-background-color: white;
+    -fx-pref-width: 16;
+    -fx-pref-height: 16;
+}
+
+.nav-item {
+    -fx-text-fill: -fx-text-secondary;
+    -fx-font-size: 14;
+    -fx-cursor: hand;
+    -fx-underline: false;
+}
+
+.nav-item:hover {
+    -fx-text-fill: white;
+}
+
+.nav-item-active {
+    -fx-text-fill: white;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 8;
+}
+
+.status-pill {
+    -fx-background-color: #141932;
+    -fx-background-radius: 20;
+    -fx-padding: 6 16;
+    -fx-text-fill: -fx-text-secondary;
+    -fx-font-size: 12;
+}
+
+.zoom-controls {
+    -fx-background-color: rgba(20, 25, 50, 0.8);
+    -fx-background-radius: 8;
+    -fx-padding: 4;
+}
+
+.color-swatch {
+    -fx-min-width: 24;
+    -fx-min-height: 24;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-border-radius: 4;
+    -fx-border-width: 2;
+}
+
+.color-swatch:selected {
+    -fx-border-color: -fx-accent-purple;
 }

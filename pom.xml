@@ -105,10 +105,12 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>com.capitalcarrier.roomvisualizer.App</mainClass>
+                    <executable>/usr/bin/java</executable>
+                    <options>
+                        <option>-Djavafx.cachedir=${project.build.directory}/javafx-cache</option>
+                    </options>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 </project>
-
-
