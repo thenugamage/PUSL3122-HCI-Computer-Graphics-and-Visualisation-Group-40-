@@ -1,0 +1,4 @@
+com\capitalcarrier\roomvisualizer\application\design\StateManagementIntegrationTest.class
+com\capitalcarrier\roomvisualizer\security\PasswordHasherTest.class
+com\capitalcarrier\roomvisualizer\domain\model\FurnitureItemTest.class
+com\capitalcarrier\roomvisualizer\domain\model\RoomTest.class

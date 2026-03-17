@@ -4,71 +4,97 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
+import java.io.InputStream;
 
 public class DatabaseConfig {
-    private static String currentUrl = null;
 
-    private static String getUrl() {
-        if (currentUrl != null) return currentUrl;
-        
-        java.util.Properties props = loadProperties();
-        String remoteUrl = props.getProperty("REMOTE_DB_URL", "");
-        if (!remoteUrl.trim().isEmpty()) {
-            System.out.println("Using REMOTE database from properties.");
-            currentUrl = remoteUrl;
-            return currentUrl;
-        }
-        
-        // --- MARKING MODE FALLBACK ---
-        // If config file is missing, use these credentials automatically for markers
-        System.out.println("No properties file found. Entering MARKING MODE (Cloud Fallback).");
-        currentUrl = "jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres?user=postgres.miqglabqmtnqseyetwec&password=sBidOAfdYJdSUaDu";
-        return currentUrl;
+    private static String url;
+    private static String username;
+    private static String password;
+    private static Connection connection;
+
+    // Load configuration on startup
+    static {
+        loadProperties();
     }
 
-    private static java.util.Properties loadProperties() {
-        java.util.Properties props = new java.util.Properties();
-        try (java.io.InputStream in = DatabaseConfig.class.getClassLoader().getResourceAsStream("google_oauth.properties")) {
-            if (in != null) {
-                props.load(in);
+    /**
+     * Load DB config from application.properties
+     */
+    private static void loadProperties() {
+        try (InputStream input = DatabaseConfig.class
+                .getClassLoader()
+                .getResourceAsStream("application.properties")) {
+
+            if (input != null) {
+                Properties props = new Properties();
+                props.load(input);
+
+                url = props.getProperty("db.url");
+                username = props.getProperty("db.username");
+                password = props.getProperty("db.password");
+
+                System.out.println("✅ Using database from application.properties");
+            } else {
+                // 🔥 MARKING MODE FALLBACK (VERY IMPORTANT)
+                System.out.println("⚠ No config file found → Using MARKING MODE (Cloud DB)");
+
+                url = "jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres";
+                username = "postgres.miqglabqmtnqseyetwec";
+                password = "sBidOAfdYJdSUaDu";
             }
-        } catch (Exception e) {}
-        return props;
-    }
 
-    public static void setTestUrl() {
-        currentUrl = "jdbc:sqlite::memory:";
-    }
-
-    public static Connection getConnection() throws SQLException {
-        String url = getUrl();
-        if (url.startsWith("jdbc:sqlite:")) {
-            return DriverManager.getConnection(url);
-        } else {
-            // For Remote PostgreSQL (Supabase Pooler - Required for IPv4 Networks)
-            // Note: Direct host is IPv6-only and will return 'No route to host' on IPv4.
-            String host = "aws-1-ap-northeast-1.pooler.supabase.com";
-            String user = "postgres.miqglabqmtnqseyetwec";
-            String pass = "sBidOAfdYJdSUaDu";
-            
-            java.util.Properties dbProps = new java.util.Properties();
-            dbProps.setProperty("user", user);
-            dbProps.setProperty("password", pass);
-            dbProps.setProperty("ssl", "true");
-            dbProps.setProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory");
-            dbProps.setProperty("prepareThreshold", "0");
-            
-            // Port 6543 is the Transaction Pooler (reliable on IPv4)
-            String cleanUrl = "jdbc:postgresql://" + host + ":6543/postgres";
-            System.out.println("Connecting to Supabase Pooler (IPv4): " + host + ":6543 as " + user);
-            
-            return DriverManager.getConnection(cleanUrl, dbProps);
+        } catch (Exception e) {
+            throw new RuntimeException("❌ Failed to load DB configuration", e);
         }
     }
 
+    /**
+     * Get database connection (Singleton)
+     */
+public static Connection getConnection() {
+    try {
+        if (connection == null || connection.isClosed()) {
+
+            if (url.startsWith("jdbc:sqlite:")) {
+
+                // ✅ Load SQLite driver
+                Class.forName("org.sqlite.JDBC");
+                connection = DriverManager.getConnection(url);
+
+            } else {
+
+                // ✅ Load PostgreSQL driver (FIXES YOUR ERROR)
+                Class.forName("org.postgresql.Driver");
+
+                Properties dbProps = new Properties();
+                dbProps.setProperty("user", username);
+                dbProps.setProperty("password", password);
+                dbProps.setProperty("ssl", "true");
+                dbProps.setProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory");
+                dbProps.setProperty("prepareThreshold", "0");
+
+                connection = DriverManager.getConnection(url, dbProps);
+            }
+
+            System.out.println("✅ Database connected!");
+        }
+
+    } catch (Exception e) {
+        throw new RuntimeException("❌ Database connection failed", e);
+    }
+
+    return connection;
+}
+
+    /**
+     * Initialize database tables (FIXES YOUR ERROR)
+     */
     public static void initializeDatabase() {
-        String timestampType = getUrl().startsWith("jdbc:sqlite:") ? "DATETIME" : "TIMESTAMP";
-        
+
+        String timestampType = url.startsWith("jdbc:sqlite:") ? "DATETIME" : "TIMESTAMP";
+
         String createUsersTable = "CREATE TABLE IF NOT EXISTS users (" +
                 "id TEXT PRIMARY KEY," +
                 "username TEXT UNIQUE," +
@@ -90,20 +116,29 @@ public class DatabaseConfig {
 
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
+
             stmt.execute(createUsersTable);
             stmt.execute(createProjectsTable);
-            
-            // Get absolute path for logging (if using SQLite)
-            String url = getUrl();
-            if (url.startsWith("jdbc:sqlite:")) {
-                String dbPath = new java.io.File(url.replace("jdbc:sqlite:", "")).getAbsolutePath();
-                System.out.println("Local SQLite database initialized at: " + dbPath);
-            } else {
-                System.out.println("Remote database connection verified.");
+
+            System.out.println("✅ Database initialized successfully!");
+
+        } catch (SQLException e) {
+            System.err.println("❌ Error initializing database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Close DB connection safely
+     */
+    public static void closeConnection() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+                System.out.println("🔒 Database connection closed.");
             }
         } catch (SQLException e) {
-            System.err.println("CRITICAL: Error initializing database: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("⚠ Error closing DB: " + e.getMessage());
         }
     }
 }
