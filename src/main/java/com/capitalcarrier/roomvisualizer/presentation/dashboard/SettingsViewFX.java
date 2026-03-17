@@ -43,6 +43,7 @@ public class SettingsViewFX extends VBox {
         VBox content = new VBox(32);
         content.setPadding(new Insets(0, 0, 40, 0));
         content.setStyle("-fx-background-color: transparent;");
+        content.setAlignment(Pos.TOP_CENTER);
 
         content.getChildren().addAll(
             buildAccountSection(),
