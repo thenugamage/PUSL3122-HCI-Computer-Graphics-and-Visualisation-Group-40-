@@ -83,6 +83,27 @@ public class RoomViewport3DFX extends Group {
         buildRoom();
         buildCamera();
         buildLights();
+
+        // Performance Testing: 3D rendering frame rate monitoring
+        javafx.animation.AnimationTimer fpsTimer = new javafx.animation.AnimationTimer() {
+            private long lastUpdate = 0;
+            private int frames = 0;
+            @Override
+            public void handle(long now) {
+                if (lastUpdate == 0) {
+                    lastUpdate = now;
+                    return;
+                }
+                frames++;
+                if (now - lastUpdate >= 1_000_000_000L) {
+                    System.out.println("[Performance] 3D Viewport FPS: " + frames + " | Memory Usage: " + 
+                        (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024 * 1024) + " MB");
+                    frames = 0;
+                    lastUpdate = now;
+                }
+            }
+        };
+        fpsTimer.start();
     }
 
     // ── Room geometry ──────────────────────────────────────────────────────────
