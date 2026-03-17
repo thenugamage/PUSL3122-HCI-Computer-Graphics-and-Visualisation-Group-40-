@@ -1,7 +1,7 @@
 package com.capitalcarrier.roomvisualizer;
 
 import com.capitalcarrier.roomvisualizer.config.DatabaseConfig;
-import com.capitalcarrier.roomvisualizer.presentation.auth.LoginFrame;
+import com.capitalcarrier.roomvisualizer.presentation.templates.TemplatesFrame;
 
 import javax.swing.*;
 
@@ -9,7 +9,7 @@ public class App {
     public static void main(String[] args) {
         // Initialize the embedded SQLite database before starting the UI
         DatabaseConfig.initializeDatabase();
-        
+
         // Start the application GUI on the Event Dispatch Thread
         SwingUtilities.invokeLater(() -> {
             try {
@@ -17,9 +17,9 @@ public class App {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            
-            LoginFrame loginFrame = new LoginFrame();
-            loginFrame.setVisible(true);
+
+            TemplatesFrame frame = new TemplatesFrame();
+            frame.setVisible(true);
         });
     }
 }
