@@ -41,6 +41,12 @@ public class DatabaseConfig {
     }
 
     public static Connection getConnection() throws SQLException {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("PostgreSQL Driver not found: " + e.getMessage());
+        }
+        
         String url = getUrl();
         if (url.startsWith("jdbc:sqlite:")) {
             return DriverManager.getConnection(url);
