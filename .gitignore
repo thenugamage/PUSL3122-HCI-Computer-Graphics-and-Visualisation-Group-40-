@@ -101,3 +101,10 @@ snapshots/
 *.bak
 *.swp
 *.orig
+
+# ===============================
+# Project-specific unwanted files
+# ===============================
+dependency-reduced-pom.xml
+mvn_log.txt
+dir/
