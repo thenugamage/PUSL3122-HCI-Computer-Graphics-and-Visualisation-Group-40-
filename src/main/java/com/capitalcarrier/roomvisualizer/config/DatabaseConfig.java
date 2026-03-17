@@ -45,12 +45,18 @@ public class DatabaseConfig {
         if (url.startsWith("jdbc:sqlite:")) {
             return DriverManager.getConnection(url);
         } else {
-            // For Remote PostgreSQL (Supabase Pooler - Required for IPv4 Networks)
-            // Note: Direct host is IPv6-only and will return 'No route to host' on IPv4.
-            String host = "aws-1-ap-northeast-1.pooler.supabase.com";
+            // For Remote PostgreSQL
+            // We ensure we use Port 6543 (Transaction Pooler) for IPv4 compatibility
             String user = "postgres.miqglabqmtnqseyetwec";
             String pass = "sBidOAfdYJdSUaDu";
             
+            // If the URL from properties contains credentials, we could parse them, 
+            // but for this project we'll ensure the properties URL is used if it matches our pattern.
+            String finalUrl = url;
+            if (url.contains(":5432/")) {
+                finalUrl = url.replace(":5432/", ":6543/"); // Force pooler port for reliability
+            }
+
             java.util.Properties dbProps = new java.util.Properties();
             dbProps.setProperty("user", user);
             dbProps.setProperty("password", pass);
@@ -58,11 +64,8 @@ public class DatabaseConfig {
             dbProps.setProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory");
             dbProps.setProperty("prepareThreshold", "0");
             
-            // Port 6543 is the Transaction Pooler (reliable on IPv4)
-            String cleanUrl = "jdbc:postgresql://" + host + ":6543/postgres";
-            System.out.println("Connecting to Supabase Pooler (IPv4): " + host + ":6543 as " + user);
-            
-            return DriverManager.getConnection(cleanUrl, dbProps);
+            System.out.println("Connecting to Remote Database: " + finalUrl.split("\\?")[0]);
+            return DriverManager.getConnection(finalUrl, dbProps);
         }
     }
 
