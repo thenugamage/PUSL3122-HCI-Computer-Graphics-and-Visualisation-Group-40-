@@ -2,6 +2,9 @@
 # Maven / Java
 # ===============================
 target/
+*.exe
+RoomVisualizer/
+dist/
 *.class
 *.jar
 *.war

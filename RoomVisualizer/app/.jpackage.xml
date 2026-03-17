@@ -1,5 +1,0 @@
-<?xml version="1.0" ?>
-<jpackage-state version="25.0.2" platform="windows">
-  <app-version>1.0</app-version>
-  <main-launcher>RoomVisualizer</main-launcher>
-  <main-class>com.capitalcarrier.roomvisualizer.App</main-class></jpackage-state>
