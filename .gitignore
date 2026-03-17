@@ -1,16 +1,21 @@
 # ===============================
-# Maven / Java
+# Java / Maven Build Artifacts
 # ===============================
 target/
-*.exe
-RoomVisualizer/
-dist/
 *.class
 *.jar
 *.war
 *.ear
-hs_err_pid*
-.mvn/wrapper/maven-wrapper.jar
+
+# Maven wrapper (keep if used, otherwise ignore)
+# .mvn/wrapper/maven-wrapper.jar
+
+# ===============================
+# Executables / Distribution
+# ===============================
+*.exe
+dist/
+RoomVisualizer/
 
 # ===============================
 # Logs
@@ -19,21 +24,25 @@ logs/
 *.log
 
 # ===============================
-# OS files
+# Database (runtime only)
+# ===============================
+*.db
+*.sqlite
+*.sqlite3
+
+# ===============================
+# OS Files
 # ===============================
 .DS_Store
-.DS_Store?
 Thumbs.db
 ehthumbs.db
 desktop.ini
 
 # ===============================
-# IDE - IntelliJ IDEA
+# IDE - IntelliJ
 # ===============================
 .idea/
 *.iml
-*.iws
-*.ipr
 out/
 
 # ===============================
@@ -52,18 +61,16 @@ bin/
 # ===============================
 # IDE - NetBeans
 # ===============================
-/nbproject/private/
-/build/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
 
 # ===============================
-# Secrets & Credentials  ← KEY SECTION
+# Secrets & Credentials
 # ===============================
-# Google OAuth credentials - NEVER commit these
-# google_oauth.properties (will be shared for team collaboration)
 client_secret*.json
 credentials.json
 token.json
@@ -73,31 +80,22 @@ tokens/
 *.key
 *.keystore
 
-# Environment files
 .env
 .env.*
 *.env
 
-# Application config with secrets
 application-secret.properties
 secret.properties
 
 # ===============================
-# Database files (runtime data)
-# ===============================
-# *.db
-# *.sqlite
-# *.sqlite3
-
-# ===============================
-# Runtime / export data
+# Runtime / Generated Data
 # ===============================
 data/
 exports/
 snapshots/
 
 # ===============================
-# Temporary files
+# Temporary Files
 # ===============================
 *.tmp
 *.bak
