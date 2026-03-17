@@ -1,21 +1,11 @@
-# Room Visualizer
+## Download Application
 
-## Features
-- Furniture placement system
-- Interactive UI (Java Swing)
-- Database integration
+You can download and run the application from the GitHub Releases:
 
-## Technologies
-- Java
-- Swing
-- Maven
+👉 https://github.com/thenugamage/PUSL3122-HCI-Computer-Graphics-and-Visualisation-Group-40-/releases
 
-## How to Run
-
-### Option 1: Run Executable
-Download from Releases:
-👉 [Download here](your-release-link)
-
-### Option 2: Run from Source
-mvn clean install
-java -jar target/app.jar
+### How to Run
+1. Download the ZIP file
+2. Extract it
+3. Open the folder
+4. Run `RoomVisualizer.exe`
