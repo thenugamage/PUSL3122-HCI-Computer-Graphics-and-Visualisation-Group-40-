@@ -1,0 +1,38 @@
+name: Build JavaFX App
+
+on:
+  push:
+    branches: [ thenuri2 ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Maven
+        run: mvn clean package
+
+      - name: Create EXE using jpackage
+        run: |
+          jpackage ^
+          --name RoomVisualizer ^
+          --input target ^
+          --main-jar furniture-room-visualizer-1.0-SNAPSHOT.jar ^
+          --type app-image ^
+          --dest dist ^
+          --java-options "--enable-native-access=ALL-UNNAMED"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RoomVisualizer-App
+          path: dist/RoomVisualizer/
