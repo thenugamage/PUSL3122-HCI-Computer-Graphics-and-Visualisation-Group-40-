@@ -30,10 +30,34 @@ We have refined the authentication system for a better user experience:
     - Ensure `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are correctly set.
     - New team members must be added as **"Test users"** in the Google Cloud Console's OAuth consent screen by the project owner.
 
-## Quick Start
+## Installation & Requirements
 
-1.  **Java Environment**: Ensure Java 17 and Maven are installed.
+To run this project on a new machine, ensure you have the following installed:
+
+1.  **Java Development Kit (JDK) 17**: This project targets Java 17. Check with `java -version`.
+2.  **Apache Maven**: Used for dependency management. Check with `mvn -version`.
+3.  **Git**: For version control.
+4.  **Active Internet Connection**: Required on the first run to download dependencies and consistently for remote database access.
+
+### Getting Started
+
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/thenugamage/PUSL3122-HCI-Computer-Graphics-and-Visualisation-Group-40-.git
+    cd PUSL3122-HCI-Computer-Graphics-and-Visualisation-Group-40-
+    ```
 2.  **Configuration**: 
-    - Copy `google_oauth.properties.example` to `src/main/resources/google_oauth.properties`.
+    - Copy `src/main/resources/google_oauth.properties.example` to `src/main/resources/google_oauth.properties`.
     - Fill in the `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `REMOTE_DB_URL` provided by the team lead.
-3.  **Run**: `mvn clean compile exec:java`
+3.  **Run the Application**:
+    ```bash
+    mvn javafx:run
+    ```
+
+## Development Commands
+
+- **Build Project**: `mvn clean install`
+- **Run Tests**: `mvn test`
+- **Run App (via JavaFX plugin)**: `mvn javafx:run`
+- **Run Performance Tests**: Log output will appear in the console during runtime showing FPS and Memory usage.
+
