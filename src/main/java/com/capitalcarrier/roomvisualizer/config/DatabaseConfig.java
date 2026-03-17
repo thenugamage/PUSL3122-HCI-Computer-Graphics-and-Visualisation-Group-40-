@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DatabaseConfig {
-    private static final String DEFAULT_URL = "jdbc:sqlite:furniture_visualizer.db";
     private static String currentUrl = null;
 
     private static String getUrl() {
@@ -15,12 +14,15 @@ public class DatabaseConfig {
         java.util.Properties props = loadProperties();
         String remoteUrl = props.getProperty("REMOTE_DB_URL", "");
         if (!remoteUrl.trim().isEmpty()) {
-            System.out.println("Using REMOTE database: " + remoteUrl.split("@")[remoteUrl.split("@").length - 1]);
+            System.out.println("Using REMOTE database from properties.");
             currentUrl = remoteUrl;
             return currentUrl;
         }
         
-        currentUrl = DEFAULT_URL;
+        // --- MARKING MODE FALLBACK ---
+        // If config file is missing, use these credentials automatically for markers
+        System.out.println("No properties file found. Entering MARKING MODE (Cloud Fallback).");
+        currentUrl = "jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres?user=postgres.miqglabqmtnqseyetwec&password=sBidOAfdYJdSUaDu";
         return currentUrl;
     }
 
