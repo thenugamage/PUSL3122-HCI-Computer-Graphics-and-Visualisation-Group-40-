@@ -60,7 +60,7 @@ public class EditorFX {
         root.setRight(catalogPanel);
 
         view3D = new RoomViewport3DFX(room, item -> syncSelection(item, view3D));
-        view2D = new RoomCanvas2DFX(room, item -> syncSelection(item, view2D));
+        view2D = new RoomCanvas2DFX(room, item -> syncSelection(item, view2D), this::refreshViews);
 
         subScene3D = new SubScene(view3D, 800, 600, true, SceneAntialiasing.BALANCED);
         subScene3D.setFill(Color.web("#050A1E"));

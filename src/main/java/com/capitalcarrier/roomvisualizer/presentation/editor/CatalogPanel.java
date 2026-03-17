@@ -421,6 +421,15 @@ public class CatalogPanel extends VBox {
         });
 
         row.getChildren().addAll(thumb, info, addBtn);
+        
+        row.setOnDragDetected(e -> {
+            javafx.scene.input.Dragboard db = row.startDragAndDrop(javafx.scene.input.TransferMode.COPY);
+            javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
+            content.putString("FURNITURE:" + name + ":" + activeCategory + ":" + w + ":" + h + ":" + d + ":" + color);
+            db.setContent(content);
+            e.consume();
+        });
+        
         return row;
     }
 }

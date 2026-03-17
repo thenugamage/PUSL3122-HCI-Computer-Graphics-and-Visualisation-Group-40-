@@ -20,12 +20,14 @@ public class RoomCanvas2DFX extends Pane {
 
     private FurnitureItem selectedItem = null;
     private Consumer<FurnitureItem> onSelectionChanged;
+    private Runnable onRefresh;
     private double dragStartMouseX, dragStartMouseY;
     private double dragStartItemX, dragStartItemZ;
 
-    public RoomCanvas2DFX(Room room, Consumer<FurnitureItem> onSelectionChanged) {
+    public RoomCanvas2DFX(Room room, Consumer<FurnitureItem> onSelectionChanged, Runnable onRefresh) {
         this.room = room;
         this.onSelectionChanged = onSelectionChanged;
+        this.onRefresh = onRefresh;
         canvas = new Canvas(800, 600);
         getChildren().add(canvas);
 
@@ -101,6 +103,78 @@ public class RoomCanvas2DFX extends Pane {
         canvas.setOnScroll(e -> {
             double delta = e.getDeltaY() > 0 ? 5 : -5;
             setZoom(zoom + delta);
+        });
+
+        // Drop target support
+        canvas.setOnDragOver(e -> {
+            if (e.getGestureSource() != canvas && e.getDragboard().hasString()) {
+                String str = e.getDragboard().getString();
+                if (str.startsWith("FURNITURE:")) {
+                    e.acceptTransferModes(javafx.scene.input.TransferMode.COPY);
+                }
+            }
+            e.consume();
+        });
+
+        canvas.setOnDragDropped(e -> {
+            javafx.scene.input.Dragboard db = e.getDragboard();
+            boolean success = false;
+            if (db.hasString()) {
+                String str = db.getString();
+                if (str.startsWith("FURNITURE:")) {
+                    String[] parts = str.split(":");
+                    if (parts.length >= 7) {
+                        String name = parts[1];
+                        String type = parts[2];
+                        double w = Double.parseDouble(parts[3]);
+                        double h = Double.parseDouble(parts[4]);
+                        double d = Double.parseDouble(parts[5]);
+                        String color = parts[6];
+
+                        double rw = room.getWidth() * zoom;
+                        double rl = room.getLength() * zoom;
+                        double offX = (getWidth() - rw) / 2.0;
+                        double offY = (getHeight() - rl) / 2.0;
+                        
+                        double dropX = (e.getX() - offX) / zoom;
+                        double dropZ = (e.getY() - offY) / zoom;
+
+                        dropX -= w / 2.0;
+                        dropZ -= d / 2.0;
+
+                        if (snapToGrid) {
+                            dropX = Math.round(dropX * 2.0) / 2.0;
+                            dropZ = Math.round(dropZ * 2.0) / 2.0;
+                        }
+
+                        dropX = Math.max(0, Math.min(room.getWidth() - w, dropX));
+                        dropZ = Math.max(0, Math.min(room.getLength() - d, dropZ));
+
+                        FurnitureItem fi = new FurnitureItem();
+                        fi.setId(java.util.UUID.randomUUID().toString());
+                        fi.setName(name);
+                        fi.setType(type);
+                        fi.setWidth(w);
+                        fi.setHeight(h);
+                        fi.setDepth(d);
+                        fi.setColor(color);
+                        fi.setX(dropX);
+                        fi.setZ(dropZ);
+                        fi.setY(0);
+
+                        room.addFurnitureItem(fi);
+                        success = true;
+                        if (this.onSelectionChanged != null) {
+                            this.onSelectionChanged.accept(fi);
+                        }
+                        if (this.onRefresh != null) {
+                            this.onRefresh.run();
+                        }
+                    }
+                }
+            }
+            e.setDropCompleted(success);
+            e.consume();
         });
 
         draw();
