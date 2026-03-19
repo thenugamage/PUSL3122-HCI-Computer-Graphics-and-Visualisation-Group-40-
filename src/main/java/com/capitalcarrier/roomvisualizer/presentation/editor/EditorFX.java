@@ -48,30 +48,68 @@ public class EditorFX {
     private void initializeUI(Stage stage) {
         root = new BorderPane();
         root.setStyle("-fx-background-color: #050A1E;");
+        // Ensure the root fills all available space when hosted in a StackPane (DashboardFX)
+        root.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
         // We don't build a navbar here if it's hosted in DashboardFX
         // But for standalone start, it might need one. 
         // We'll let DashboardFX handle the top part.
         
         propertiesPanel = new PropertiesPanel(room, this::refreshViews, stage);
-        root.setLeft(propertiesPanel);
+        
+        javafx.scene.control.ScrollPane propertiesScroll = new javafx.scene.control.ScrollPane(propertiesPanel);
+        propertiesScroll.setFitToWidth(true);
+        propertiesScroll.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        propertiesScroll.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        propertiesScroll.setStyle("-fx-background-color: #0F1437; -fx-control-inner-background: #0F1437; -fx-background: #0F1437; -fx-border-color: rgba(255,255,255,0.05); -fx-border-width: 0 1 0 0;");
+        propertiesPanel.setStyle("-fx-background-color: #0F1437; -fx-border-width: 0;");
+        
+        root.setLeft(propertiesScroll);
         
         catalogPanel = new CatalogPanel(room, this::refreshViews);
         root.setRight(catalogPanel);
 
         view3D = new RoomViewport3DFX(room, item -> syncSelection(item, view3D));
+        view3D.setOnItemMoved(item -> {
+            if (view2D != null) {
+                view2D.draw();
+            }
+        });
         view2D = new RoomCanvas2DFX(room, item -> syncSelection(item, view2D), this::refreshViews);
+        view2D.setOnItemMoved(item -> {
+            if (view3D != null) {
+                view3D.updateFurniture(item);
+            }
+        });
 
         subScene3D = new SubScene(view3D, 800, 600, true, SceneAntialiasing.BALANCED);
         subScene3D.setFill(Color.web("#050A1E"));
         subScene3D.setVisible(false);
+        // Mark as unmanaged so StackPane does NOT include it in layout calculations.
+        // If it were managed with bound width/height properties, JavaFX layout would
+        // fight the bindings on every pulse and cause a shrinking feedback loop.
+        subScene3D.setManaged(false);
 
         centerStack = new StackPane();
         centerStack.setStyle("-fx-background-color: #050A1E;");
+        // Allow centerStack and view2D to grow and fill all available space
+        centerStack.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        view2D.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
         centerStack.getChildren().addAll(view2D, subScene3D);
 
-        subScene3D.widthProperty().bind(centerStack.widthProperty());
-        subScene3D.heightProperty().bind(centerStack.heightProperty());
+        // Manually sync subScene3D size/position to the centerStack via a layout listener
+        // (cannot use property bindings since width/height are read-only after setManaged(false))
+        centerStack.layoutBoundsProperty().addListener((obs, oldBounds, newBounds) -> {
+            double w = newBounds.getWidth();
+            double h = newBounds.getHeight();
+            if (w > 0 && h > 0) {
+                subScene3D.setWidth(w);
+                subScene3D.setHeight(h);
+                subScene3D.setLayoutX(0);
+                subScene3D.setLayoutY(0);
+            }
+        });
         subScene3D.setCamera(view3D.getCamera());
 
         wire3DMouseControls();
@@ -134,7 +172,7 @@ public class EditorFX {
                     view3D.pan(dx, dy);
                 } else if (e.isPrimaryButtonDown()) {
                     // Rotate with primary button
-                    view3D.getRotateY().setAngle(view3D.getRotateY().getAngle() + dx * 0.25);
+                    view3D.getRotateY().setAngle(view3D.getRotateY().getAngle() - dx * 0.25);
                     view3D.getRotateX().setAngle(
                         Math.max(-89, Math.min(89,
                             view3D.getRotateX().getAngle() + dy * 0.20)));

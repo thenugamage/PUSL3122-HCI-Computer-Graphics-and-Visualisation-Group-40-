@@ -42,7 +42,7 @@ public class DashboardFX {
 
         root.setCenter(contentArea);
 
-        Scene scene = new Scene(root, 1280, 900);
+        Scene scene = new Scene(root, 1200, 800);
         stage.setScene(scene);
         stage.show();
     }
