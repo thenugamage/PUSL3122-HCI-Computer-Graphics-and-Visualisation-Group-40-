@@ -1,0 +1,42 @@
+name: Build and Package
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+        
+    - name: Build with Maven
+      run: mvn clean package -DskipTests
+      
+    - name: Create DMG with jpackage
+      run: |
+        jpackage --name "LankaFurnitureVisualizer" \
+                 --input target \
+                 --main-jar furniture-room-visualizer-1.0-SNAPSHOT.jar \
+                 --main-class com.capitalcarrier.roomvisualizer.App \
+                 --type dmg \
+                 --dest . \
+                 --vendor "CapitalCarrier" \
+                 --app-version "1.0"
+                 
+    - name: Upload DMG Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: LankaFurnitureVisualizer-DMG
+        path: LankaFurnitureVisualizer-1.0.dmg
