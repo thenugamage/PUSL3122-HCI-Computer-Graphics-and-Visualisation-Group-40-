@@ -16,6 +16,9 @@ target/
 *.exe
 dist/
 RoomVisualizer/
+LankaFurnitureVisualizer/
+LankaFurnitureVisualizer.zip
+*.zip
 
 # ===============================
 # Logs
@@ -108,6 +111,3 @@ snapshots/
 dependency-reduced-pom.xml
 mvn_log.txt
 dir/
-*.exe
-target/
-RoomVisualizer/

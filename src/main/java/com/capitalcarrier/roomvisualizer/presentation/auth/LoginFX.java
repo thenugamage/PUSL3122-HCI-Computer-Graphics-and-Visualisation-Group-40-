@@ -10,6 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.effect.DropShadow;
@@ -32,7 +33,7 @@ public class LoginFX {
         stage.setTitle("Furniture Room Design Visualizers - Login");
 
         StackPane root = new StackPane();
-        root.setPrefSize(1400, 1000);
+        root.setPrefSize(1200, 800);
         root.setStyle("-fx-background-color: #091C61;");
 
         try {
@@ -182,9 +183,16 @@ public class LoginFX {
         card.getChildren().addAll(cardHeader, cardSubHeader, usernameBox, passwordBox, signInBtn, divider, googleBtn, bottomBox);
 
         contentWrapper.getChildren().addAll(titleBox, card);
-        root.getChildren().add(contentWrapper);
+        
+        ScrollPane scrollPane = new ScrollPane(contentWrapper);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-padding: 0;");
+        
+        root.getChildren().add(scrollPane);
 
-        Scene scene = new Scene(root, 1400, 1000);
+        Scene scene = new Scene(root, 1200, 800);
         stage.setScene(scene);
         stage.show();
     }

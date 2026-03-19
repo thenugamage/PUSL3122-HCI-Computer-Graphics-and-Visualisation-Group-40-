@@ -21,6 +21,10 @@ public class RoomCanvas2DFX extends Pane {
     private FurnitureItem selectedItem = null;
     private Consumer<FurnitureItem> onSelectionChanged;
     private Runnable onRefresh;
+    private Consumer<FurnitureItem> onItemMoved;
+
+    public void setOnItemMoved(Consumer<FurnitureItem> handler) { this.onItemMoved = handler; }
+
     private double dragStartMouseX, dragStartMouseY;
     private double dragStartItemX, dragStartItemZ;
 
@@ -50,14 +54,14 @@ public class RoomCanvas2DFX extends Pane {
                     double fw = item.getWidth()  * zoom * scale;
                     double fd = item.getDepth()  * zoom * scale;
                     double cx = offX + (item.getX() + (item.getWidth() * scale) / 2.0) * zoom;
-                    double cy = offY + (item.getZ() + (item.getDepth() * scale) / 2.0) * zoom;
+                    double cy = offY + (room.getLength() - item.getZ() - (item.getDepth() * scale) / 2.0) * zoom;
 
                     // Mouse relative to center
                     double dx = e.getX() - cx;
                     double dy = e.getY() - cy;
 
-                    // Rotate mouse back to local axes
-                    double rad = Math.toRadians(-item.getRotation());
+                    // Rotate mouse back to local axes (inverted rotation for mirrored Z)
+                    double rad = Math.toRadians(item.getRotation());
                     double rx = dx * Math.cos(rad) - dy * Math.sin(rad);
                     double ry = dx * Math.sin(rad) + dy * Math.cos(rad);
 
@@ -81,7 +85,7 @@ public class RoomCanvas2DFX extends Pane {
         canvas.setOnMouseDragged(e -> {
             if (selectedItem != null) {
                 double dx = (e.getX() - dragStartMouseX) / zoom;
-                double dz = (e.getY() - dragStartMouseY) / zoom;
+                double dz = -(e.getY() - dragStartMouseY) / zoom; // Inverted Z mapping
                 double newX = dragStartItemX + dx;
                 double newZ = dragStartItemZ + dz;
 
@@ -96,6 +100,9 @@ public class RoomCanvas2DFX extends Pane {
                 selectedItem.setX(newX);
                 selectedItem.setZ(newZ);
                 draw();
+                if (onItemMoved != null) {
+                    onItemMoved.accept(selectedItem);
+                }
             }
         });
 
@@ -137,7 +144,8 @@ public class RoomCanvas2DFX extends Pane {
                         double offY = (getHeight() - rl) / 2.0;
                         
                         double dropX = (e.getX() - offX) / zoom;
-                        double dropZ = (e.getY() - offY) / zoom;
+                        // Inverted Z: Y=0 corresponds to Z=roomLength.
+                        double dropZ = room.getLength() - (e.getY() - offY) / zoom;
 
                         dropX -= w / 2.0;
                         dropZ -= d / 2.0;
@@ -273,12 +281,12 @@ public class RoomCanvas2DFX extends Pane {
                 double fw = item.getWidth()  * zoom * scale;
                 double fd = item.getDepth()  * zoom * scale;
                 double icx = offX + (item.getX() + (item.getWidth() * scale) / 2.0) * zoom;
-                double icy = offY + (item.getZ() + (item.getDepth() * scale) / 2.0) * zoom;
+                double icy = offY + (room.getLength() - item.getZ() - (item.getDepth() * scale) / 2.0) * zoom;
                 boolean sel = item == selectedItem;
 
                 gc.save();
                 gc.translate(icx, icy);
-                gc.rotate(item.getRotation());
+                gc.rotate(-item.getRotation()); // Inverted rotation for mirrored Z
 
                 // Drop shadow
                 gc.setFill(Color.web("#000000", 0.25));

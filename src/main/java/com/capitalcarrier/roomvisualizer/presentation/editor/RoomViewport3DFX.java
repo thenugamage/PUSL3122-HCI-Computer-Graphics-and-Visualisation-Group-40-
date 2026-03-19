@@ -56,6 +56,11 @@ public class RoomViewport3DFX extends Group {
     private Group selectedGroup = null;
     private FurnitureItem selectedData;
     private java.util.function.Consumer<FurnitureItem> onSelectionChanged;
+    private java.util.function.Consumer<FurnitureItem> onItemMoved;
+
+    public void setOnItemMoved(java.util.function.Consumer<FurnitureItem> handler) {
+        this.onItemMoved = handler;
+    }
 
     // ── Constructor ────────────────────────────────────────────────────────────
 
@@ -396,11 +401,14 @@ public class RoomViewport3DFX extends Group {
 
     private void setupFurnitureDragging(Group fg, FurnitureItem item) {
         final double[] startPos = new double[2];
+        final double[] startItem = new double[2];
 
         fg.setOnMousePressed(e -> {
             if (e.isPrimaryButtonDown()) {
                 startPos[0] = e.getSceneX();
                 startPos[1] = e.getSceneY();
+                startItem[0] = item.getX();
+                startItem[1] = item.getZ();
                 e.consume(); // Prevent camera from starting a drag
             }
         });
@@ -410,11 +418,10 @@ public class RoomViewport3DFX extends Group {
                 double dx = e.getSceneX() - startPos[0];
                 double dy = e.getSceneY() - startPos[1];
 
-                // Simple projection mapping: we use a scale factor to move the item on the floor
-                // 0.05 is a rough heuristic for the current camera zoom/distance mapping
-                double moveScale = 0.05;
-                double newX = item.getX() + dx * moveScale;
-                double newZ = item.getZ() - dy * moveScale;
+                // Heuristic mapping: 0.012 maps screen pixels to the real-world meter scaling
+                double moveScale = 0.012;
+                double newX = startItem[0] + dx * moveScale;
+                double newZ = startItem[1] - dy * moveScale;
 
                 double scale = item.getScale();
                 double limitX = room.getWidth() - item.getWidth() * scale;
@@ -422,12 +429,15 @@ public class RoomViewport3DFX extends Group {
                 item.setX(Math.max(0, Math.min(limitX, newX)));
                 item.setZ(Math.max(0, Math.min(limitZ, newZ)));
 
-                // Apply transform
+                // Apply transform locally
                 fg.setTranslateX(item.getX() + (item.getWidth() * scale) / 2.0);
                 fg.setTranslateZ(item.getZ() + (item.getDepth() * scale) / 2.0);
 
-                startPos[0] = e.getSceneX();
-                startPos[1] = e.getSceneY();
+                if (onItemMoved != null) {
+                    onItemMoved.accept(item);
+                }
+
+                // Note: we DO NOT reset startPos here so dragging stays anchored to the initial click without continuous drift!
                 e.consume();
             }
         });
@@ -1079,8 +1089,8 @@ public class RoomViewport3DFX extends Group {
     }
 
     public void pan(double dx, double dy) {
-        cameraTranslate.setX(cameraTranslate.getX() + dx * 0.01);
-        cameraTranslate.setY(cameraTranslate.getY() + dy * 0.01);
+        cameraTranslate.setX(cameraTranslate.getX() - dx * 0.01);
+        cameraTranslate.setY(cameraTranslate.getY() - dy * 0.01);
     }
 
     public void resetView() {
