@@ -20,30 +20,47 @@ public class DatabaseConfig {
     }
 
     /**
-     * Load DB config from application.properties
+     * Load DB config from application.properties or google_oauth.properties
      */
     private static void loadProperties() {
-        try (InputStream input = DatabaseConfig.class
-                .getClassLoader()
-                .getResourceAsStream("application.properties")) {
+        try {
+            // First try application.properties
+            try (InputStream input = DatabaseConfig.class
+                    .getClassLoader()
+                    .getResourceAsStream("application.properties")) {
 
-            if (input != null) {
-                Properties props = new Properties();
-                props.load(input);
-
-                url = props.getProperty("db.url");
-                username = props.getProperty("db.username");
-                password = props.getProperty("db.password");
-
-                System.out.println("✅ Using database from application.properties");
-            } else {
-                // 🔥 MARKING MODE FALLBACK (VERY IMPORTANT)
-                System.out.println("⚠ No config file found → Using MARKING MODE (Cloud DB)");
-
-                url = "jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres";
-                username = "postgres.miqglabqmtnqseyetwec";
-                password = "sBidOAfdYJdSUaDu";
+                if (input != null) {
+                    Properties props = new Properties();
+                    props.load(input);
+                    url = props.getProperty("db.url");
+                    username = props.getProperty("db.username");
+                    password = props.getProperty("db.password");
+                    System.out.println("✅ Using database from application.properties");
+                    return;
+                }
             }
+
+            // Then try google_oauth.properties for backward compatibility
+            try (InputStream input = DatabaseConfig.class
+                    .getClassLoader()
+                    .getResourceAsStream("google_oauth.properties")) {
+
+                if (input != null) {
+                    Properties props = new Properties();
+                    props.load(input);
+                    url = props.getProperty("REMOTE_DB_URL");
+                    username = "postgres.miqglabqmtnqseyetwec"; // Default user
+                    password = "sBidOAfdYJdSUaDu"; // Default pass
+                    System.out.println("✅ Using database from google_oauth.properties");
+                    return;
+                }
+            }
+
+            // 🔥 MARKING MODE FALLBACK (VERY IMPORTANT)
+            System.out.println("⚠ No config file found → Using MARKING MODE (Cloud DB)");
+            url = "jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres";
+            username = "postgres.miqglabqmtnqseyetwec";
+            password = "sBidOAfdYJdSUaDu";
 
         } catch (Exception e) {
             throw new RuntimeException("❌ Failed to load DB configuration", e);
@@ -53,46 +70,39 @@ public class DatabaseConfig {
     /**
      * Get database connection (Singleton)
      */
-public static Connection getConnection() {
-    try {
-        if (connection == null || connection.isClosed()) {
+    public static Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                // Ensure port 6543 is used for reliability
+                if (url.contains(":5432/")) {
+                    url = url.replace(":5432/", ":6543/");
+                }
 
-            if (url.startsWith("jdbc:sqlite:")) {
-
-                // ✅ Load SQLite driver
-                Class.forName("org.sqlite.JDBC");
-                connection = DriverManager.getConnection(url);
-
-            } else {
-
-                // ✅ Load PostgreSQL driver (FIXES YOUR ERROR)
-                Class.forName("org.postgresql.Driver");
-
-                Properties dbProps = new Properties();
-                dbProps.setProperty("user", username);
-                dbProps.setProperty("password", password);
-                dbProps.setProperty("ssl", "true");
-                dbProps.setProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory");
-                dbProps.setProperty("prepareThreshold", "0");
-
-                connection = DriverManager.getConnection(url, dbProps);
+                if (url.startsWith("jdbc:sqlite:")) {
+                    Class.forName("org.sqlite.JDBC");
+                    connection = DriverManager.getConnection(url);
+                } else {
+                    Class.forName("org.postgresql.Driver");
+                    Properties dbProps = new Properties();
+                    dbProps.setProperty("user", username);
+                    dbProps.setProperty("password", password);
+                    dbProps.setProperty("ssl", "true");
+                    dbProps.setProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory");
+                    dbProps.setProperty("prepareThreshold", "0");
+                    connection = DriverManager.getConnection(url, dbProps);
+                }
+                System.out.println("✅ Database connected!");
             }
-
-            System.out.println("✅ Database connected!");
+        } catch (Exception e) {
+            throw new RuntimeException("❌ Database connection failed", e);
         }
-
-    } catch (Exception e) {
-        throw new RuntimeException("❌ Database connection failed", e);
+        return connection;
     }
 
-    return connection;
-}
-
     /**
-     * Initialize database tables (FIXES YOUR ERROR)
+     * Initialize database tables
      */
     public static void initializeDatabase() {
-
         String timestampType = url.startsWith("jdbc:sqlite:") ? "DATETIME" : "TIMESTAMP";
 
         String createUsersTable = "CREATE TABLE IF NOT EXISTS users (" +
@@ -119,7 +129,6 @@ public static Connection getConnection() {
 
             stmt.execute(createUsersTable);
             stmt.execute(createProjectsTable);
-
             System.out.println("✅ Database initialized successfully!");
 
         } catch (SQLException e) {
